@@ -1,0 +1,6 @@
+[submodule "regenbazaar/packages/foundry/lib/forge-std"]
+	path = regenbazaar/packages/foundry/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "regenbazaar/packages/foundry/lib/openzeppelin-contracts"]
+	path = regenbazaar/packages/foundry/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
