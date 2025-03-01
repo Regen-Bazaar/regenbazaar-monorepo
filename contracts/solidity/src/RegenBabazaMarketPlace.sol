@@ -461,4 +461,20 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
         return interfaceId == type(IERC721Receiver).interfaceId ||
                interfaceId == type(IERC1155Receiver).interfaceId;
     }
+
+
+        /**
+     * @notice Rejects direct ETH transfers to contract
+     * @dev All payments must go through buyListing/buyListingsBatch
+     */
+    receive() external payable {
+        revert("Direct ETH transfers not allowed");
+    }
+
+    /**
+     * @notice Fallback function to reject unintended calls
+     */
+    fallback() external payable {
+        revert("Invalid function call");
+    }
 }
