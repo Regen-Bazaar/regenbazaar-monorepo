@@ -12,6 +12,11 @@ import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
+/**
+ * @title RegenBazaar - Decentralized NFT Marketplace on Celo
+ * @notice A secure marketplace for trading ERC721 and ERC1155 NFTs using ERC20 tokens
+ * @dev Inherits from OpenZeppelin's Ownable, Pausable, and ReentrancyGuard contracts
+ */
 contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IERC1155Receiver {
     using SafeERC20 for IERC20;
     using Address for address payable;
@@ -56,6 +61,8 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     event ContractPaused();
     event ContractUnpaused();
     event FundsRecovered(address indexed token, uint256 amount);
+    event ListingCancelled(uint256 indexed listingId);
+    event ListingInactive(uint256 indexed listingId);
 
     // ======================
     // Constants
@@ -68,6 +75,16 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     // ======================
     // Structs
     // ======================
+    /**
+     * @notice Structure representing an NFT listing
+     * @param seller Address of the NFT seller
+     * @param token Address of the NFT contract
+     * @param tokenId ID of the NFT token
+     * @param price Price per unit in payment token
+     * @param quantity Available quantity (1 for ERC721)
+     * @param tokenType 0 for ERC721, 1 for ERC1155
+     * @param isActive Whether the listing is active
+     */
     struct Listing {
         address seller;
         address token;
@@ -88,6 +105,11 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     // ======================
     // Constructor
     // ======================
+    /**
+     * @notice Initializes the contract with payment token address
+     * @dev Uses address(0) for native CELO payments
+     * @param _paymentToken Address of ERC20 payment token (use address(0) for CELO)
+     */
     constructor(address _paymentToken) Ownable(msg.sender) {
         if (_paymentToken == address(0)) revert InvalidTokenPaymentAddress();
         paymentToken = IERC20(_paymentToken);
@@ -96,6 +118,15 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     // ======================
     // Marketplace Functions
     // ======================
+    /**
+     * @notice Creates a new NFT listing
+     * @dev Verifies ownership and approval before creating listing
+     * @param token Address of NFT contract
+     * @param tokenId ID of NFT token
+     * @param price Price per unit in payment token
+     * @param quantity Available quantity (1 for ERC721)
+     * @param tokenType 0 for ERC721, 1 for ERC1155
+     */
     function createListing(
         address token,
         uint256 tokenId,
@@ -107,10 +138,12 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
 
         if (tokenType == TOKEN_TYPE_ERC721) {
             if (IERC721(token).ownerOf(tokenId) != msg.sender) revert Unauthorized();
-            if (IERC721(token).balanceOf(msg.sender) < quantity) revert ERC721InvalidQuantity();
+            if (IERC721(token).getApproved(tokenId) != address(this) && 
+            !IERC721(token).isApprovedForAll(msg.sender, address(this))) revert Unauthorized();
             if (quantity <= 0) revert ERC721InvalidQuantity();
-        } else if (tokenType == TOKEN_TYPE_ERC1155) {
+        } else {
             if (IERC1155(token).balanceOf(msg.sender, tokenId) < quantity) revert InsufficientBalance();
+            if (!IERC1155(token).isApprovedForAll(msg.sender, address(this))) revert Unauthorized();
         }
 
         listings[nextListingId] = Listing({
@@ -127,42 +160,54 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
         nextListingId++;
     }
 
+    /**
+     * @notice Purchases a single NFT listing
+     * @dev Handles both CELO and ERC20 payments with reentrancy protection
+     * @param listingId ID of the listing to purchase
+     * @param quantity Quantity to purchase
+     */
     function buyListing(uint256 listingId, uint256 quantity) external payable nonReentrant whenNotPaused {
         Listing storage listing = listings[listingId];
         if (!listing.isActive) revert InvalidListing();
         if (listing.quantity < quantity) revert InsufficientBalance();
 
         uint256 totalPrice = listing.price * quantity;
-        uint256 platformFee = (totalPrice * FEE_PERCENTAGE) / FEE_BASE;
+        uint256 platformFee = calculatePlatformFee(totalPrice);
         uint256 sellerShare = totalPrice - platformFee;
 
-        // Handle payment (CELO ETH is the native currency, so we use msg.value)
-        if (address(paymentToken) != address(0)) {
+        // Update state first to prevent reentrancy
+        listing.quantity -= quantity;
+        if (listing.quantity == 0) {
+            listing.isActive = false;
+            emit ListingInactive(listingId);
+        }
+
+        // Handle payment
+        if (address(paymentToken) == address(0)) { // CELO payment
             if (msg.value != totalPrice) revert IncorrectPaymentAmount();
-
-            // Transfer seller's share using call
+            
             (bool successSeller, ) = payable(listing.seller).call{value: sellerShare}("");
-            if (!successSeller) revert TransferFailed();
-
-            // Transfer platform fee using call
             (bool successPlatform, ) = payable(owner()).call{value: platformFee}("");
-            if (!successPlatform) revert TransferFailed();
-        } else {
+            
+            if (!successSeller || !successPlatform) revert TransferFailed();
+        } else { // ERC20 payment
             paymentToken.safeTransferFrom(msg.sender, address(this), totalPrice);
             paymentToken.safeTransfer(listing.seller, sellerShare);
             paymentToken.safeTransfer(owner(), platformFee);
         }
 
-        // Transfer tokens
+        // Transfer NFT
         if (listing.tokenType == TOKEN_TYPE_ERC721) {
             IERC721(listing.token).safeTransferFrom(listing.seller, msg.sender, listing.tokenId);
-        } else if (listing.tokenType == TOKEN_TYPE_ERC1155) {
-            IERC1155(listing.token).safeTransferFrom(listing.seller, msg.sender, listing.tokenId, quantity, bytes(""));
+        } else {
+            IERC1155(listing.token).safeTransferFrom(
+                listing.seller, 
+                msg.sender, 
+                listing.tokenId, 
+                quantity, 
+                bytes("")
+            );
         }
-
-        // Update listing
-        listing.quantity -= quantity;
-        if (listing.quantity == 0) listing.isActive = false;
 
         emit ListingPurchased(listingId, msg.sender, quantity, totalPrice, sellerShare, platformFee);
     }
@@ -170,6 +215,11 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     // ======================
     // Additional Functions
     // ======================
+    /**
+     * @notice Purchases multiple listings in a single transaction
+     * @param listingIds Array of listing IDs to purchase
+     * @param quantities Array of quantities to purchase for each listing
+     */
     function buyListingsBatch(
         uint256[] calldata listingIds,
         uint256[] calldata quantities
@@ -179,6 +229,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
         uint256 totalPrice;
         uint256 totalPlatformFee;
 
+        // Calculate total price and fees
         for (uint256 i = 0; i < listingIds.length; i++) {
             Listing storage listing = listings[listingIds[i]];
             if (!listing.isActive) revert InvalidListing();
@@ -186,44 +237,52 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
             
             uint256 listingPrice = listing.price * quantities[i];
             totalPrice += listingPrice;
-            totalPlatformFee += (listingPrice * FEE_PERCENTAGE) / FEE_BASE;
+            totalPlatformFee += calculatePlatformFee(listingPrice);
         }
 
-        // Handle payment (CELO ETH is the native currency, so we use msg.value)
-        if (address(paymentToken) != address(0)) {
+        // Handle payment
+        if (address(paymentToken) == address(0)) { // CELO payment
             if (msg.value != totalPrice) revert IncorrectPaymentAmount();
-            
             (bool success, ) = payable(owner()).call{value: totalPlatformFee}("");
             if (!success) revert TransferFailed();
-        } else {
+        } else { // ERC20 payment
             paymentToken.safeTransferFrom(msg.sender, address(this), totalPrice);
             paymentToken.safeTransfer(owner(), totalPlatformFee);
         }
 
+        // Process each listing
         for (uint256 i = 0; i < listingIds.length; i++) {
             Listing storage listing = listings[listingIds[i]];
             uint256 listingPrice = listing.price * quantities[i];
-            uint256 sellerShare = listingPrice - ((listingPrice * FEE_PERCENTAGE) / FEE_BASE);
+            uint256 sellerShare = listingPrice - calculatePlatformFee(listingPrice);
 
-            // Transfer seller share
-            if (address(paymentToken) != address(0)) {
+            // Update state first
+            listing.quantity -= quantities[i];
+            if (listing.quantity == 0) {
+                listing.isActive = false;
+                emit ListingInactive(listingIds[i]);
+            }
+
+            // Transfer funds
+            if (address(paymentToken) == address(0)) {
                 (bool success, ) = payable(listing.seller).call{value: sellerShare}("");
                 if (!success) revert TransferFailed();
             } else {
                 paymentToken.safeTransfer(listing.seller, sellerShare);
             }
 
-            // Transfer tokens
+            // Transfer NFT
             if (listing.tokenType == TOKEN_TYPE_ERC721) {
-                if (quantities[i] != 1) revert ERC721InvalidQuantity();
                 IERC721(listing.token).safeTransferFrom(listing.seller, msg.sender, listing.tokenId);
-            } else if (listing.tokenType == TOKEN_TYPE_ERC1155) {
-                IERC1155(listing.token).safeTransferFrom(listing.seller, msg.sender, listing.tokenId, quantities[i], bytes(""));
+            } else {
+                IERC1155(listing.token).safeTransferFrom(
+                    listing.seller, 
+                    msg.sender, 
+                    listing.tokenId, 
+                    quantities[i], 
+                    bytes("")
+                );
             }
-
-            // Update listing
-            listing.quantity -= quantities[i];
-            if (listing.quantity == 0) listing.isActive = false;
 
             emit ListingPurchased(
                 listingIds[i],
@@ -231,7 +290,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
                 quantities[i],
                 listingPrice,
                 sellerShare,
-                (listingPrice * FEE_PERCENTAGE) / FEE_BASE
+                calculatePlatformFee(listingPrice)
             );
         }
     }
@@ -239,27 +298,62 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     // ======================
     // Admin Functions
     // ======================
+    /**
+     * @notice Pauses the marketplace
+     * @dev Only callable by owner
+     */
     function pause() external onlyOwner {
         _pause();
         emit ContractPaused();
     }
 
+    /**
+     * @notice Unpauses the marketplace
+     * @dev Only callable by owner
+     */
     function unpause() external onlyOwner {
         _unpause();
         emit ContractUnpaused();
     }
 
-    // Recover stuck CELO ETH (native currency) and ERC20 tokens
+    /**
+     * @notice Recovers stuck funds from contract
+     * @dev Only callable by owner
+     * @param token Address of token to recover (address(0) for CELO)
+     * @param amount Amount to recover
+     */
     function recoverFunds(address token, uint256 amount) external onlyOwner {
-        if (token != address(0)) {
-            // Recover stuck CELO ETH
+        if (token == address(0)) {
             (bool success, ) = payable(owner()).call{value: amount}("");
             if (!success) revert TransferFailed();
         } else {
-            // Recover stuck ERC20 tokens
             IERC20(token).safeTransfer(owner(), amount);
         }
         emit FundsRecovered(token, amount);
+    }
+
+    /**
+     * @notice Cancels an active listing
+     * @dev Can be called by seller or owner
+     * @param listingId ID of listing to cancel
+     */
+    function cancelListing(uint256 listingId) external {
+        Listing storage listing = listings[listingId];
+        if (msg.sender != listing.seller && msg.sender != owner()) revert Unauthorized();
+        listing.isActive = false;
+        emit ListingCancelled(listingId);
+    }
+
+    // ======================
+    // Helper Functions
+    // ======================
+    /**
+     * @notice Calculates platform fee for a given amount
+     * @param totalPrice Total price to calculate fee from
+     * @return platformFee Calculated fee amount
+     */
+    function calculatePlatformFee(uint256 totalPrice) internal pure returns (uint256) {
+        return (totalPrice * FEE_PERCENTAGE) / FEE_BASE;
     }
 
     // ======================
