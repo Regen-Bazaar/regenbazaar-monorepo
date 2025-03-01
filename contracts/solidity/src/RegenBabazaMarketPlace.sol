@@ -107,11 +107,10 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     // ======================
     /**
      * @notice Initializes the contract with payment token address
-     * @dev Uses address(0) for native CELO payments
-     * @param _paymentToken Address of ERC20 payment token (use address(0) for CELO)
+     *
+     * @param _paymentToken Address of ERC20 payment token
      */
     constructor(address _paymentToken) Ownable(msg.sender) {
-        if (_paymentToken == address(0)) revert InvalidTokenPaymentAddress();
         paymentToken = IERC20(_paymentToken);
     }
 
@@ -183,7 +182,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
         }
 
         // Handle payment
-        if (address(paymentToken) != address(0)) { 
+        if (address(paymentToken) == address(0)) { 
             if (msg.value != totalPrice) revert IncorrectPaymentAmount();
             
             (bool successSeller, ) = payable(listing.seller).call{value: sellerShare}("");
@@ -241,7 +240,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
         }
 
         // Handle payment
-        if (address(paymentToken) != address(0)) {
+        if (address(paymentToken) == address(0)) {
             if (msg.value != totalPrice) revert IncorrectPaymentAmount();
             (bool success, ) = payable(owner()).call{value: totalPlatformFee}("");
             if (!success) revert TransferFailed();
@@ -356,7 +355,9 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
         return (totalPrice * FEE_PERCENTAGE) / FEE_BASE;
     }
 
-    // ======================
+    // ===
+￼
+===================
     // ERC Receiver Functions
     // ======================
     function onERC721Received(
