@@ -183,7 +183,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
         }
 
         // Handle payment
-        if (address(paymentToken) == address(0)) { // CELO payment
+        if (address(paymentToken) != address(0)) { 
             if (msg.value != totalPrice) revert IncorrectPaymentAmount();
             
             (bool successSeller, ) = payable(listing.seller).call{value: sellerShare}("");
@@ -241,7 +241,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
         }
 
         // Handle payment
-        if (address(paymentToken) == address(0)) { // CELO payment
+        if (address(paymentToken) != address(0)) {
             if (msg.value != totalPrice) revert IncorrectPaymentAmount();
             (bool success, ) = payable(owner()).call{value: totalPlatformFee}("");
             if (!success) revert TransferFailed();
