@@ -107,6 +107,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
 
         if (tokenType == TOKEN_TYPE_ERC721) {
             if (IERC721(token).ownerOf(tokenId) != msg.sender) revert Unauthorized();
+            if (IERC721(token).balanceOf(msg.sender) < quantity) revert ERC721InvalidQuantity();
             if (quantity <= 0) revert ERC721InvalidQuantity();
         } else if (tokenType == TOKEN_TYPE_ERC1155) {
             if (IERC1155(token).balanceOf(msg.sender, tokenId) < quantity) revert InsufficientBalance();
@@ -205,7 +206,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
             uint256 sellerShare = listingPrice - ((listingPrice * FEE_PERCENTAGE) / FEE_BASE);
 
             // Transfer seller share
-            if (address(paymentToken) == address(0)) {
+            if (address(paymentToken) != address(0)) {
                 (bool success, ) = payable(listing.seller).call{value: sellerShare}("");
                 if (!success) revert TransferFailed();
             } else {
