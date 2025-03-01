@@ -14,7 +14,7 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
  * @title RegenBazaar - Decentralized NFT Marketplace on Celo
- * @notice A secure marketplace for trading ERC721 and ERC1155 NFTs using ERC20 tokens
+ * @notice A secure marketplace for trading ERC721 and ERC1155 NFTs
  * @dev Inherits from OpenZeppelin's Ownable, Pausable, and ReentrancyGuard contracts
  */
 contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IERC1155Receiver {
@@ -108,7 +108,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     /**
      * @notice Initializes the contract with payment token address
      *
-     * @param _paymentToken Address of ERC20 payment token
+     * 
      */
     constructor(address _paymentToken) Ownable(msg.sender) {
         paymentToken = IERC20(_paymentToken);
@@ -295,6 +295,81 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     }
 
     // ======================
+    // View Functions
+    // ======================
+    /**
+     * @notice Get details of a specific listing
+     * @dev Returns the full Listing struct for a given listing ID
+     * @param listingId ID of the listing to retrieve
+     * @return Listing struct containing all listing details
+     */
+    function getListing(uint256 listingId) external view returns (Listing memory) {
+        if (listingId >= nextListingId) revert ListingDoesNotExist();
+        return listings[listingId];
+    }
+
+    /**
+     * @notice Get all active listings in the marketplace
+     * @dev Returns an array of all currently active listings
+     * @return activeListings Array of active Listing structs
+     */
+    function getActiveListings() external view returns (Listing[] memory) {
+        Listing[] memory activeListings = new Listing[](nextListingId);
+        uint256 count = 0;
+        
+        for (uint256 i = 0; i < nextListingId; i++) {
+            if (listings[i].isActive) {
+                activeListings[count] = listings[i];
+                count++;
+            }
+        }
+        
+        // Resize array to remove empty elements
+        assembly {
+            mstore(activeListings, count)
+        }
+        return activeListings;
+    }
+
+    /**
+     * @notice Get all listings created by a specific seller
+     * @dev Returns both active and inactive listings for a given address
+     * @param seller Address of the seller to query
+     * @return sellerListings Array of Listing structs created by the seller
+     */
+    function getListingsBySeller(address seller) external view returns (Listing[] memory) {
+        Listing[] memory sellerListings = new Listing[](nextListingId);
+        uint256 count = 0;
+        
+        for (uint256 i = 0; i < nextListingId; i++) {
+            if (listings[i].seller == seller) {
+                sellerListings[count] = listings[i];
+                count++;
+            }
+        }
+        
+        // Resize array to remove empty elements
+        assembly {
+            mstore(sellerListings, count)
+        }
+        return sellerListings;
+    }
+
+    /**
+     * @notice Get all listings in the marketplace
+     * @dev Returns both active and inactive listings
+     * @return allListings Array of all Listing structs in the marketplace
+     */
+    function getAllListings() external view returns (Listing[] memory) {
+        Listing[] memory allListings = new Listing[](nextListingId);
+        
+        for (uint256 i = 0; i < nextListingId; i++) {
+            allListings[i] = listings[i];
+        }
+        return allListings;
+    }
+
+    // ======================
     // Admin Functions
     // ======================
     /**
@@ -346,18 +421,11 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     // ======================
     // Helper Functions
     // ======================
-    /**
-     * @notice Calculates platform fee for a given amount
-     * @param totalPrice Total price to calculate fee from
-     * @return platformFee Calculated fee amount
-     */
     function calculatePlatformFee(uint256 totalPrice) internal pure returns (uint256) {
         return (totalPrice * FEE_PERCENTAGE) / FEE_BASE;
     }
 
-    // ===
-￼
-===================
+    // ======================
     // ERC Receiver Functions
     // ======================
     function onERC721Received(
