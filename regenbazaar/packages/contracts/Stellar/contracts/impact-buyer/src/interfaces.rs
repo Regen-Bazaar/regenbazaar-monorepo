@@ -8,6 +8,9 @@ use soroban_sdk::{contractclient, Address, Env, String};
 /// functions for our impact marketplace.
 #[contractclient(name = "NftClient")]
 pub trait NftInterface {
+    /// Initialize the NFT contract with basic metadata
+    fn initialize(env: Env, admin: Address, name: String, symbol: String);
+
     /// Returns the owner of a specific NFT token
     fn owner(env: Env, token_id: String) -> Address;
 
@@ -18,6 +21,9 @@ pub trait NftInterface {
     /// Balance of tokens owned by an address (may not be relevant for all NFTs)
     /// For standard NFTs, this should return the count of NFTs owned
     fn balance(env: Env, owner: Address) -> i128;
+
+    /// Mints an NFT to a specific address
+    fn mint(env: Env, to: Address, token_id: String);
 
     /// Returns true if an address is authorized to manage a specific token
     /// This is useful for marketplaces and other contracts that need to

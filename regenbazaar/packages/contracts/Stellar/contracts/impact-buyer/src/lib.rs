@@ -552,4 +552,5 @@ impl ImpactBuyerContract {
     }
 }
 
+mod mock_nft;
 mod test;

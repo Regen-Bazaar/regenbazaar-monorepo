@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Address, Map, String};
+use soroban_sdk::{contracterror, contracttype, Address, Map, String};
 
 // Define the NFT impact product structure
 #[contracttype]
@@ -71,14 +71,14 @@ pub enum DataKey {
 }
 
 // Define error codes
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[contracterror]
+#[derive(Clone, Debug, Eq, PartialEq, Copy)]
 pub enum ErrorCode {
-    AlreadyInitialized,
-    Unauthorized,
-    ProductNotFound,
-    ProductNotListed,
-    InsufficientFunds,
-    CannotBuyOwnNFT,
-    ContractPaused,
+    AlreadyInitialized = 0,
+    Unauthorized = 1,
+    ProductNotFound = 2,
+    ProductNotListed = 3,
+    InsufficientFunds = 4,
+    CannotBuyOwnNFT = 5,
+    ContractPaused = 6,
 }
