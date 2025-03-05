@@ -1,0 +1,23 @@
+[package]
+name = "rebaz_marketplace"
+version = "1.0.0"
+authors = []
+
+[addresses]
+rebaz = "_"
+std = "0x1"
+aptos_std = "0x1"
+
+[dev-addresses]
+
+[dependencies.SupraFramework]
+git = "https://github.com/Entropy-Foundation/aptos-core.git"
+rev = "dev"
+subdir = "aptos-move/framework/supra-framework"
+
+[dependencies.AptosTokenObjects]
+git = "https://github.com/Entropy-Foundation/aptos-core.git"
+rev = "dev"
+subdir = "aptos-move/framework/aptos-token-objects"
+
+[dev-dependencies]
