@@ -2,6 +2,8 @@
 
 ## Overview
 
+Deployed Contract (check wallet modules) [Testnet](https://testnet.suprascan.io/tx/0x128f338869fc2d0094f4dd7d5ec1bf9b065f846b2a690acfa45e2e19969f504d/f)
+
 The Marketplace smart contract is built using **Move** on the **Supra Network**. It provides a decentralized marketplace where users can:
 
 - **List** Impact products for sale.
