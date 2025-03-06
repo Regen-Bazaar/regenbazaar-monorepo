@@ -3,7 +3,7 @@ module rebaz::events {
     use std::string::String;
 
     use supra_framework::event;
-    use supra_framework::object::{Self, Object};
+    use supra_framework::object::{Object};
 
     use aptos_token_objects::collection;
     use aptos_token_objects::token;
@@ -38,7 +38,7 @@ module rebaz::events {
       admin: address,
     }
 
-    public(friend) fun emit_init_event<T: key>(
+    public(friend) fun emit_init_event(
       marketplace: address,
       name: String,
       fee_percentage: u64,
@@ -62,7 +62,7 @@ module rebaz::events {
       token_metadata: TokenMetadata
     }
 
-    public(friend) fun emit_list_event<T: key>(
+    public(friend) fun emit_list_event(
       marketplace: address,
       product_id: u64,
       product_name: String,
@@ -89,7 +89,7 @@ module rebaz::events {
       token_metadata: TokenMetadata
     }
 
-    public(friend) fun emit_unlist_event<T: key>(
+    public(friend) fun emit_unlist_event(
       marketplace: address,
       product_id: u64,
       creator: address,
@@ -116,7 +116,7 @@ module rebaz::events {
       token_metadata: TokenMetadata
     }
 
-    public(friend) fun emit_buy_event<T: key>(
+    public(friend) fun emit_buy_event(
       marketplace: address,
       product_id: u64,
       seller: address,
@@ -144,7 +144,7 @@ module rebaz::events {
       new_admin: address,
     }
 
-    public(friend) fun emit_ownership_transfer_event<T: key>(
+    public(friend) fun emit_ownership_transfer_event(
       marketplace: address,
       admin: address,
       new_admin: address,
@@ -162,7 +162,7 @@ module rebaz::events {
       admin: address,
     }
 
-    public(friend) fun emit_cancel_ownership_transfer_event<T: key>(
+    public(friend) fun emit_cancel_ownership_transfer_event(
       marketplace: address,
       admin: address,
     ) {
@@ -179,7 +179,7 @@ module rebaz::events {
       old_admin: address,
     }
 
-    public(friend) fun emit_claim_ownership_event<T: key>(
+    public(friend) fun emit_claim_ownership_event(
       marketplace: address,
       new_admin: address,
       old_admin: address,
@@ -198,7 +198,7 @@ module rebaz::events {
       old_admin: address,
     }
 
-    public(friend) fun emit_disable_ownership_event<T: key>(
+    public(friend) fun emit_disable_ownership_event(
       marketplace: address,
       new_admin: address,
       old_admin: address,
@@ -214,15 +214,15 @@ module rebaz::events {
     struct FeesUpdateEvent has drop, store {
       marketplace: address,
       admin: address,
-      old_fee_percentage: address,
-      new_fee_percentage: address,
+      old_fee_percentage: u64,
+      new_fee_percentage: u64,
     }
 
-    public(friend) fun emit_fees_update_event<T: key>(
+    public(friend) fun emit_fees_update_event(
       marketplace: address,
       admin: address,
-      old_fee_percentage: address,
-      new_fee_percentage: address,
+      old_fee_percentage: u64,
+      new_fee_percentage: u64,
     ) {
         event::emit(FeesUpdateEvent {
             marketplace,
@@ -239,7 +239,7 @@ module rebaz::events {
       pause: bool
     }
 
-    public(friend) fun emit_pause_event<T: key>(
+    public(friend) fun emit_pause_event(
       marketplace: address,
       admin: address,
       pause: bool
@@ -258,7 +258,7 @@ module rebaz::events {
       amount: u64
     }
 
-    public(friend) fun emit_withdraw_fees_event<T: key>(
+    public(friend) fun emit_withdraw_fees_event(
       marketplace: address,
       admin: address,
       amount: u64
