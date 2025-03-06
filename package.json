@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@albedo-link/intent": "^0.12.0"
+  }
+}
