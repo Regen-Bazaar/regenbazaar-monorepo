@@ -19,6 +19,7 @@ module rebaz::marketplace {
 
     use rebaz::events;
 
+
     const EMARKETPLACE_NOT_EXIST: u64 = 1;
     const EPRODUCTS_NOT_EXIST_AT_ADDRESS: u64 = 2;
     const EPRODUCT_ID_NOT_EXIST: u64 = 3;
@@ -29,6 +30,7 @@ module rebaz::marketplace {
     const EADMIN_TRANSFER_IN_PROCESS: u64 = 7;
     const EADMIN_TRANSFER_NOT_IN_PROCESS: u64 = 8;
     const EINVALID_FEE_PERCENTAGE: u64 = 9;
+    const EADMIN_INSUFFICIENT_BALANCE: u64 = 10;
 
     const PRECISION: u64 = 1000;
     
@@ -45,9 +47,7 @@ module rebaz::marketplace {
     /// All ProductsStorage
     // #[resource_group_member(group = supra_framework::object::ObjectGroup)]
     struct ProductsStorage has key {
-        products: Table<u64, ImpactProduct>,
-        seller_products: Table<address, vector<u64>>,
-        buyer_products: Table<address, vector<u64>>,
+        products: Table<u64, ImpactProduct>
     }
 
     /// Store the general information about the Impact Product
@@ -115,10 +115,10 @@ module rebaz::marketplace {
         let admin_address = signer::address_of(admin);
         vector::append(&mut seed, bcs::to_bytes(&admin_address));
 
-        let (res_signer, res_cap) = account::create_resource_account(admin, seed);
+        let (market_signer, res_cap) = account::create_resource_account(admin, seed);
 
         move_to(
-            &res_signer,
+            &market_signer,
             Market {
                 name,
                 fee_percentage,
@@ -131,7 +131,7 @@ module rebaz::marketplace {
         );
 
         move_to(
-            &res_signer,
+            &market_signer,
             ProductsStorage {
                 products: table::new(),
                 buyer_products: table::new(),
@@ -139,7 +139,7 @@ module rebaz::marketplace {
             }
         )
 
-        let market_addr = signer::address_of(&res_signer);
+        let market_addr = signer::address_of(&market_signer);
 
         event::emit_init_event(market_addr, name, fee_percentage, admin_address);
 
@@ -152,7 +152,7 @@ module rebaz::marketplace {
         nft_object: Object<ObjectCore>,
         price: u64,
         marketplace: address,
-    ) acquires Market, ProductsStorage {
+    ): u64 acquires Market, ProductsStorage {
         assert!(exists<Market>(marketplace), error::not_found(EMARKETPLACE_NOT_EXIST));
         let market = borrow_global_mut<Market>(marketplace);
 
@@ -185,6 +185,8 @@ module rebaz::marketplace {
             price, 
             events::token_metadata(object::convert(nft_object))
         );
+
+        product_id
     }
 
     public entry fun unlist_product(
@@ -207,9 +209,9 @@ module rebaz::marketplace {
 
         let ImpactProduct { nft_object, id: _, name: _, price: _, seller: _, buyer: _, is_sold: _ } = table::remove(&mut product_store.products, product_id);
 
-        let res_signer = create_signer_with_capability(&market.market_signer_capability);
+        let market_signer = create_signer_with_capability(&market.market_signer_capability);
 
-        object::transfer(&res_signer, nft_object, seller_addr);
+        object::transfer(&market_signer, nft_object, seller_addr);
 
         event::emit_unlist_event(
             market_addr, 
@@ -224,7 +226,6 @@ module rebaz::marketplace {
         buyer: &signer,
         product_id: u64,
         marketplace: address,
-        coins: Coin<CoinType>,
     ) acquires Market, ProductsStorage, ImpactProduct {
         assert!(exists<Market>(marketplace), error::not_found(EMARKETPLACE_NOT_EXIST));
         let market = borrow_global<Market>(marketplace);
@@ -236,17 +237,20 @@ module rebaz::marketplace {
         assert!(!product.is_sold, error::invalid_state(EPRODUCT_SOLD));
 
         assert!(option::is_none(&product.buyer), error::invalid_state(EPRODUCT_SOLD));
-
+        
+        let coins = coin::withdraw<CoinType>(buyer, product.price);
+        
         let fee_value = calculate_fee(product.price, market.fee_percentage);
+        
         let fee = coin::extract(&mut coins, fee_value);
         aptos_account::deposit_coins(marketplace, fee);
 
         // Seller gets what is left
         aptos_account::deposit_coins(seller, coins)
 
-        let res_signer = create_signer_with_capability(&market.market_signer_capability);
+        let market_signer = create_signer_with_capability(&market.market_signer_capability);
 
-        object::transfer(&res_signer, nft_object, buyer_addr);
+        object::transfer(&market_signer, nft_object, buyer_addr);
 
         product.is_sold = true;
 
@@ -265,7 +269,7 @@ module rebaz::marketplace {
 
     //////////////////// Admin functions ////////////////////////////////
 
-    public entry fun transfer_ownership(admin: &signer, marketplace: address, new_admin: address) acquires Market {
+    public entry fun transfer_ownership(admin: &signer, new_admin: address, marketplace: address) acquires Market {
         assert!(exists<Market>(marketplace), error::not_found(EMARKETPLACE_NOT_EXIST));
         let market = borrow_global<Market>(marketplace);
 
@@ -282,7 +286,7 @@ module rebaz::marketplace {
         );
     }
 
-    public entry fun cancel_admin_transfer(admin: &signer, marketplace: address) acquires Market {
+    public entry fun cancel_ownership_transfer(admin: &signer, marketplace: address) acquires Market {
         assert!(exists<Market>(marketplace), error::not_found(EMARKETPLACE_NOT_EXIST));
         let market = borrow_global<Market>(marketplace);
         
@@ -377,10 +381,31 @@ module rebaz::marketplace {
 
         market.paused = pause;
         
-        event::emit_fees_update_event(
+        event::emit_pause_event(
             market_addr, 
             admin,
             pause
+        );
+    }
+
+    public entry fun withdraw_fees<CoinType>(admin: &signer, amount: u64, marketplace: address) acquires Market {
+        assert!(exists<Market>(marketplace), error::not_found(EMARKETPLACE_NOT_EXIST));
+        let market = borrow_global<Market>(marketplace);
+
+        let admin_addr = signer::address_of(admin);
+        assert!(admin_addr == market.admin, error::permission_denied(EINVALID_ADMIN_ACCOUNT));
+
+        assert!(coin::balance<CoinType>(marketplace) >= amount, error::invalid_argument(EADMIN_INSUFFICIENT_BALANCE));
+        
+        let market_signer = create_signer_with_capability(&market.market_signer_capability);
+        let coins = coin::withdraw<CoinType>(market_signer, amount);
+
+        aptos_account::deposit_coins(admin_addr, amount);
+
+        event::emit_withdraw_fees_event(
+            market_addr, 
+            admin,
+            amount
         );
     }
     
@@ -401,4 +426,225 @@ module rebaz::marketplace {
     inline fun calculate_fee(amount: u64, fee_percentage: u64): u64 {
         (amount * fee_percentage) / PRECISION
     }
+
+
+    //////////////////// Tests ////////////////////////////////
+    #[test_only]
+    use aptos_token_objects::aptos_token;
+    #[test_only]
+    use supra_framework::aptos_account::transfer_coins;
+    #[test_only]
+    use supra_framework::account;
+    #[test_only]
+    use supra_framework::supra_coin::{Self, SupraCoin};
+    #[test_only]
+    use supra_framework::coin;
+    #[test_only]
+    use supra_framework::timestamp;
+
+    #[test_only]
+    public inline fun setup(
+        supra_framework: &signer,
+        accounts: vector<&signer>
+    ) {
+        timestamp::set_time_has_started_for_testing(supra_framework);
+        let (burn_cap, mint_cap) = supra_coin::initialize_for_test(supra_framework);
+
+        vector::enumerate_ref(&accounts, |_, account| {
+            let account_addr = signer::address_of(account);
+            account::create_account_for_test(account_addr);
+            coin::register<SupraCoin>(account);
+
+            let coins = coin::mint(10000, &mint_cap);
+            coin::deposit(account_addr, coins);
+        });
+
+        coin::destroy_burn_cap(burn_cap);
+        coin::destroy_mint_cap(mint_cap);
+    }
+    
+    #[test_only]
+    public fun mint_token(seller: &signer): Object<Token> {
+        let collection_name = string::utf8(b"collection_name");
+
+        let aptos_token = aptos_token::mint_token_object(
+            seller,
+            collection_name,
+            string::utf8(b"description"),
+            string::utf8(b"token_name"),
+            string::utf8(b"uri"),
+            vector::empty(),
+            vector::empty(),
+            vector::empty(),
+        );
+        object::convert(aptos_token)
+    }
+
+    #[test(supra_framework = @0x1, admin = @0x111, seller = @0x222, buyer = @0x333)]
+    fun test_e2e(
+        supra_framework: &signer,
+        admin: &signer,
+        seller: &signer,
+        buyer: &signer,
+    ) {
+        setup(supra_framework, vector[admin, seller, buyer]);
+        
+        let _admin_addr =  signer::address_of(admin);
+        let seller_addr = signer::address_of(seller);
+        let buyer_addr = signer::address_of(buyer);
+
+        let fee_percentage = 2000; // 2%
+        let marketplace_address = init(
+            admin,
+            fee_percentage,
+            string::utf8(b"rebaz_marketplace"),
+        );
+
+
+        let token = mint_token(seller);
+        let price = 50;
+
+        let product_id = list_product(
+            seller,
+            string::utf8(b"product_1"),
+            object::convert(token),
+            price,
+            marketplace_address,
+        );
+
+        unlist_product(
+            seller,
+            product_id,
+            marketplace_address
+        );
+
+        let product_id = list_product(
+            seller,
+            string::utf8(b"product_1"),
+            object::convert(token),
+            50, // price
+            marketplace_address,
+        );
+
+        buy_product<SupraCoin>(
+            buyer,
+            product_id,
+            marketplace_address,
+        );
+
+        let expected_fee = (price * fee_percentage) / PRECISION;
+
+        withdraw_fees(
+            admin,
+            expected_fee,
+            marketplace
+        );
+      
+        let final_amount = price - expected_fee;
+
+        assert!(coin::balance<SupraCoin>(admin_addr) == 10000 + expected_fee, 0);
+        assert!(coin::balance<SupraCoin>(seller_addr) == 10000 + final_amount, 0);
+        assert!(coin::balance<SupraCoin>(buyer_addr) == 10000 - final_amount, 0);
+        assert!(object::owner(token) == buyer_addr, 0);
+    }
+
+    #[test(supra_framework = @0x1, admin = @0x111, new_admin = @0x2f2)]
+    fun test_ownership_transfer_and_claim(
+        supra_framework: &signer,
+        admin: &signer,
+        new_admin: &signer,
+    ) {
+        setup(supra_framework, vector[admin, new_admin]);
+        
+        let _admin_addr =  signer::address_of(admin);
+        let new_admin_addr = signer::address_of(new_admin);
+
+        let fee_percentage = 2000; // 2%
+
+        let marketplace_address = init(
+            admin,
+            fee_percentage,
+            string::utf8(b"rebaz_marketplace"),
+        );
+
+        transfer_ownership(
+            admin,
+            new_admin_addr,
+            marketplace_address
+        );
+
+        claim_ownership(
+            new_admin,
+            marketplace_address,
+        );
+
+        assert!(borrow_global<Market>(marketplace_address).admin == new_admin_addr, 0);
+    }
+
+    #[test(supra_framework = @0x1, admin = @0xdaf)]
+    public fun test_transferring_ownership_to_zero_address(supra_framework: &signer, admin: &signer) acquires Market {
+
+        setup(supra_framework, vector[admin]);
+
+        let admin_addr = signer::address_of(admin);
+
+        let fee_percentage = 2000; // 2%
+        
+        let marketplace_address = init(
+            admin,
+            fee_percentage,
+            string::utf8(b"rebaz_marketplace"),
+        );
+
+        let zero_addr = @0x0;
+
+        transfer_ownership(
+            admin,
+            zero_addr,
+            marketplace_address
+        );
+
+        // admin has to claim when sending to zero addr
+        claim_ownership(
+            admin,
+            marketplace_address,
+        );
+
+        assert!(borrow_global_mut<Market>(marketplace_address).admin == zero_addr, 1);
+    }
+
+    #[test(supra_framework = @0x1, admin = @0xdaf, new_admin = @0xfas)]
+    public fun test_ownership_transfer_cancel(supra_framework: &signer, admin: &signer, new_admin) acquires Market {
+
+        setup(supra_framework, vector[admin, new_admin]);
+
+        let admin_addr = signer::address_of(admin);
+        let new_admin_addr = signer::address_of(new_admin);
+
+        let fee_percentage = 2000; // 2%
+        
+        let marketplace_address = init(
+            admin,
+            fee_percentage,
+            string::utf8(b"rebaz_marketplace"),
+        );
+
+        let zero_addr = @0x0;
+
+        transfer_ownership(
+            admin,
+            new_admin_addr,
+            marketplace_address
+        );
+
+        cancel_ownership_transfer(
+            admin,
+            marketplace_address,
+        );
+
+        assert!(borrow_global_mut<Market>(marketplace_address).admin == admin_addr, 1);
+        assert!(borrow_global_mut<Market>(marketplace_address).pending_admin == option::none(), 1);
+    }
+
+    
 }

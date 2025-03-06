@@ -250,5 +250,24 @@ module rebaz::events {
             pause
         });
     }
+
+    #[event]
+    struct WitdrawFeesEvent has drop, store {
+      marketplace: address,
+      admin: address,
+      amount: u64
+    }
+
+    public(friend) fun emit_withdraw_fees_event<T: key>(
+      marketplace: address,
+      admin: address,
+      amount: u64
+    ) {
+        event::emit(WitdrawFeesEvent {
+            marketplace,
+            admin,
+            amount
+        });
+    }
     
 }

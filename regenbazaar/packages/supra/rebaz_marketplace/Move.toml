@@ -4,9 +4,11 @@ version = "1.0.0"
 authors = []
 
 [addresses]
-rebaz = "_"
+rebaz = "0x4"
 std = "0x1"
-aptos_std = "0x1"
+aptos_std = "0x2"
+supra_framework = "0x3"
+aptos_token_objects = "0x4"
 
 [dev-addresses]
 
