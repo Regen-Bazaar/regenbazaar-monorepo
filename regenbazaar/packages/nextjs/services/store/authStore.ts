@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { getCurrentUser, getUserProfile, supabase } from "~~/utils/supabase/supabaseClient";
+import {usePrivy} from '@privy-io/react-auth';
 
 interface UserProfile {
   id: string;
@@ -34,7 +35,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initialize: async () => {
     try {
       set({ isLoading: true });
-      const user = await getCurrentUser();
+      const { user } = usePrivy();
 
       if (user) {
         const profile = await getUserProfile(user.id);
@@ -48,20 +49,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  login: async (email, password) => {
+  login: async () => {
     try {
       set({ isLoading: true, error: null });
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { login } = usePrivy();
+      await login();
 
-      if (error) throw error;
-
-      if (data.user) {
-        const profile = await getUserProfile(data.user.id);
-        set({ user: data.user, profile, isLoading: false });
+      const { user } = usePrivy();
+      if (user) {
+        const profile = await getUserProfile(user.id);
+        set({ user, profile, isLoading: false });
       }
     } catch (error: any) {
       console.error("Login error:", error);
       set({ isLoading: false, error: error.message || "Failed to login" });
+    }
+  },
+
+  logout: async () => {
+    try {
+      set({ isLoading: true });
+      const { logout } = usePrivy();
+      await logout();
+      
+      set({ user: null, profile: null, isLoading: false });
+    } catch (error: any) {
+      console.error("Logout error:", error);
+      set({ isLoading: false, error: error.message || "Failed to logout" });
     }
   },
 
@@ -96,7 +110,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ isLoading: false, error: error.message || "Failed to register" });
     }
   },
-
+  
   loginWithProvider: async provider => {
     try {
       set({ isLoading: true, error: null });
@@ -112,16 +126,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  logout: async () => {
-    try {
-      set({ isLoading: true });
-      await supabase.auth.signOut();
-      set({ user: null, profile: null, isLoading: false });
-    } catch (error: any) {
-      console.error("Logout error:", error);
-      set({ isLoading: false, error: error.message || "Failed to logout" });
-    }
-  },
 
   updateProfile: async updates => {
     try {

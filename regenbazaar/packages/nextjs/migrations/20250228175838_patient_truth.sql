@@ -69,10 +69,31 @@ CREATE TABLE IF NOT EXISTS impact_products (
   created_at timestamptz DEFAULT now()
 );
 
+-- Create purchases table to track bought Impact Products
+CREATE TABLE IF NOT EXISTS purchases (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  buyer_id uuid REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  impact_product_id uuid REFERENCES impact_products(id) ON DELETE CASCADE NOT NULL,
+  purchased_at timestamptz DEFAULT now(),
+  staked boolean DEFAULT false,
+  UNIQUE(buyer_id, impact_product_id)
+);
+
+-- Create staking table to track staked Impact Products
+CREATE TABLE IF NOT EXISTS staking (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  buyer_id uuid REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  impact_product_id uuid REFERENCES impact_products(id) ON DELETE CASCADE NOT NULL,
+  staked_at timestamptz DEFAULT now(),
+  UNIQUE(buyer_id, impact_product_id)
+);
+
 -- Enable Row Level Security
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE follows ENABLE ROW LEVEL SECURITY;
 ALTER TABLE impact_products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE purchases ENABLE ROW LEVEL SECURITY;
+ALTER TABLE staking ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
 CREATE POLICY "Public profiles are viewable by everyone"
@@ -116,3 +137,40 @@ CREATE POLICY "Users can update their own impact products"
   ON impact_products
   FOR UPDATE
   USING (auth.uid() = creator_id);
+
+  -- Purchases policies
+CREATE POLICY "Purchases are viewable by the buyer"
+  ON purchases
+  FOR SELECT
+  USING (auth.uid() = buyer_id);
+
+CREATE POLICY "Users can purchase Impact Products"
+  ON purchases
+  FOR INSERT
+  WITH CHECK (auth.uid() = buyer_id);
+
+CREATE POLICY "Users can update their own purchases"
+  ON purchases
+  FOR UPDATE
+  USING (auth.uid() = buyer_id);
+
+CREATE POLICY "Users can delete their own purchases"
+  ON purchases
+  FOR DELETE
+  USING (auth.uid() = buyer_id);
+
+-- Staking policies
+CREATE POLICY "Staking is viewable by the buyer"
+  ON staking
+  FOR SELECT
+  USING (auth.uid() = buyer_id);
+
+CREATE POLICY "Users can stake their purchased Impact Products"
+  ON staking
+  FOR INSERT
+  WITH CHECK (auth.uid() = buyer_id);
+
+CREATE POLICY "Users can unstake their Impact Products"
+  ON staking
+  FOR DELETE
+  USING (auth.uid() = buyer_id);
