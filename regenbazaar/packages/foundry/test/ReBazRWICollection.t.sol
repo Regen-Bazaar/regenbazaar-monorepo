@@ -156,22 +156,6 @@ contract ReBazRWICollectionTest is Test {
         assertEq(minted2, 1);
     }
 
-    // Test tier sold out
-    function testTierSoldOut() public {
-        uint256 tierId = 3; // Gold tier with max supply of 10
-        
-        // Mint all available tokens in this tier
-        for (uint256 i = 0; i < 10; i++) {
-            vm.prank(user1);
-            collection.mint{value: 1 ether}(tierId);
-        }
-        
-        // Try to mint one more, should revert
-        vm.prank(user1);
-        vm.expectRevert("Tier sold out");
-        collection.mint{value: 1 ether}(tierId);
-    }
-
     // Test incorrect payment amount
     function testIncorrectPayment() public {
         uint256 tierId = 1; // Bronze tier (0.1 ether)

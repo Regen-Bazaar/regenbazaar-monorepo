@@ -69,28 +69,6 @@ contract ReBazRWICollection is ERC721, ERC2981, Ownable, ReentrancyGuard {
     event Minted(address indexed minter, uint256 tokenId, uint256 tierId);
 
     // CONSTRUCTOR
-    /**
-     * @notice Initializes the NFT collection with RWI data, tier information,
-     *         revenue splitting addresses, and royalty settings.
-     *
-     * @param name_
-     * @param symbol_
-     * @param _creator            Address of the NFT creator (receives 90% of mint funds).
-     * @param _regenBazaar        Address for Regen Bazaar (receives 10% of mint funds).
-     * @param organizationType
-     * @param entityName
-     * @param actionTitle
-     * @param achievedImpact
-     * @param timePeriod
-     * @param areaOfImpact
-     * @param proofUrl
-     * @param technicalSkillLevel ("Low", "Medium", "High").
-     * @param baseTokenURI
-     * @param tierIds
-     * @param tierNames
-     * @param tierPrices
-     * @param tierMaxSupplies
-     */
     constructor(
         string memory name_,
         string memory symbol_,
