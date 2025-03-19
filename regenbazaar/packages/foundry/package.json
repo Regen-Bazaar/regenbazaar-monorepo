@@ -19,6 +19,8 @@
     "verify-keystore": "make verify-keystore"
   },
   "dependencies": {
+    "@hypercerts-org/contracts": "^2.0.0-alpha.0",
+    "@hypercerts-org/sdk": "^2.5.0",
     "dotenv": "~16.3.1",
     "envfile": "~6.18.0",
     "ethers": "~5.7.1",
