@@ -51,6 +51,15 @@ The `validate_direct_listing_sale` function is called during the execution of a 
 3. Deploy the contract to StarkNet.
 4. Interact with the contract using the provided functions to list, buy, and sell tokenized assets.
 
+
+## Deployed Contract Address
+
+The marketplace smart contract has been deployed to the following address:
+
+- **StarkNet Contract Address**: `https://sepolia.starkscan.co/contract/0x7def7b451e1dd813c1781c241a7ea2365f88fbfa5dd7aad9c6b1a4e1d0e75b`
+
+Replace `https://sepolia.starkscan.co/contract/0x7def7b451e1dd813c1781c241a7ea2365f88fbfa5dd7aad9c6b1a4e1d0e75b` with the actual address of your deployed contract.
+
 ## License
 
 This project is licensed under the MIT License. See the LICENSE
