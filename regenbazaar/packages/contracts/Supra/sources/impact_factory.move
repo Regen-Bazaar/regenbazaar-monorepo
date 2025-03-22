@@ -1,12 +1,12 @@
 module impact_factory::impact_factory {
     use std::error;
     use std::signer;
-    use std::string::{Self, String};
+    use std::string::{String};
     use std::vector;
-    use std::option::{Self, Option};
 
     use supra_framework::event;
-    use supra_framework::coin::{Self, Coin};
+    use supra_framework::coin::{transfer};
+    use supra_framework::supra_coin::SupraCoin;
     
     // Error codes
     const ENO_PERMISSION: u64 = 1;
@@ -546,14 +546,13 @@ module impact_factory::impact_factory {
     }
     
     // Mint an NFT from a collection
-    public entry fun mint_nft<RebazToken>(
+    public entry fun mint_nft(
         buyer: &signer,
         collection_address: address,
         tier_id: u64,
         nft_name: String,
         nft_description: String,
-        nft_uri: String,
-        payment: Coin<RebazToken>,
+        nft_uri: String
     ) acquires ImpactCollection, SystemConfig {
         let buyer_address = signer::address_of(buyer);
         
@@ -574,32 +573,19 @@ module impact_factory::impact_factory {
         let tier = find_tier_mut(&mut collection.tiers, tier_id);
         assert!(tier.minted < tier.supply, error::resource_exhausted(EINVALID_SUPPLY));
         
-        // Process payment
-        // Ensure enough payment is provided
-        let payment_amount = coin::value(&payment);
-        assert!(payment_amount >= tier.price, error::invalid_argument(EINVALID_PAYMENT));
-        
         // Calculate splits based on system config
         let creator_amount = (tier.price * config.creator_split) / 100;
         let platform_amount = tier.price - creator_amount;
         
-        // Split the payment and send to creator and platform
+        // Process payment - using direct transfer approach
+        // Transfer to creator
         if (creator_amount > 0) {
-            let creator_payment = coin::extract(&mut payment, creator_amount);
-            coin::deposit(collection.creator, creator_payment);
+            transfer<SupraCoin>(buyer, collection.creator, creator_amount);
         };
         
+        // Transfer to platform
         if (platform_amount > 0) {
-            let platform_payment = coin::extract(&mut payment, platform_amount);
-            coin::deposit(config.platform_address, platform_payment);
-        };
-        
-        // Return any excess payment to buyer
-        let remaining = coin::value(&payment);
-        if (remaining > 0) {
-            coin::deposit(buyer_address, payment);
-        } else {
-            coin::destroy_zero(payment);
+            transfer<SupraCoin>(buyer, config.platform_address, platform_amount);
         };
         
         // Emit payment processed event
