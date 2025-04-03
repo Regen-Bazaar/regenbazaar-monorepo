@@ -3,12 +3,14 @@ import { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import albedo from "@albedo-link/intent";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+import { Wallet, X } from "lucide-react";
+import WalletMenuDropdown from "./WalletMenuDropdown";
 
 export default function ConnectWallet() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [openMenuDropdown, setOpenMenuDropdown] = useState(false)
 
   const handleConnect = async (wallet: string) => {
     try {
@@ -60,15 +62,20 @@ export default function ConnectWallet() {
     <AnimatePresence>
       {walletAddress ? (
         <div className="flex gap-4 items-center">
-          <p className="text-sm text-gray-600 dark:text-white">
+
+          <div className=" relative"  >
+
+
+          <button onClick={(e) => setOpenMenuDropdown((prev) => !prev)}  className="text-sm  dark:text-white bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer">
             {walletAddress.substring(0, 6)}...{walletAddress.slice(-4)}
-          </p>
-          <button
-            onClick={handleDisconnect}
-            className="px-4 py-2 bg-red-500 text-white rounded"
-          >
-            Disconnect ({selectedWallet})
           </button>
+
+          <WalletMenuDropdown
+          onClick={handleDisconnect}
+          wallet = {selectedWallet}
+          openMenuDropdown = {openMenuDropdown}
+          />
+          </div>
         </div>
       ) : (
         <div>
@@ -116,6 +123,12 @@ export default function ConnectWallet() {
           </Dialog>
         </div>
       )}
+
+
+
+
+
+
     </AnimatePresence>
   );
 }

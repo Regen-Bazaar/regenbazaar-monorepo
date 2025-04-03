@@ -4,7 +4,12 @@ import { supabase } from "@/utils/supabaseClient";
 import { useState } from "react";
 
 
-export default function UserForm() {
+
+interface UserFormProps {
+  closeNameModal: () => void
+}
+
+export default function UserForm({closeNameModal} : UserFormProps) {
   const [name, setName] = useState("");
   const [wallet, setWallet] = useState("");
   const [message, setMessage] = useState("");
@@ -43,7 +48,8 @@ export default function UserForm() {
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto bg-white shadow-md rounded-md">
+    <div className=" w-full h-screen fixed top-0 left-0 flex items-center justify-center bg-amber-400 "  >
+      <div className="p-4 max-w-md w-full mx-auto bg-white shadow-md rounded-md">
       <h2 className="text-xl font-bold mb-4">Register Wallet</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
@@ -74,9 +80,12 @@ export default function UserForm() {
         >
           Submit
         </button>
+        <button onClick={closeNameModal} >close</button>
       </form>
 
       {message && <p className="mt-3 text-center">{message}</p>}
+    </div>
+
     </div>
   );
 }
