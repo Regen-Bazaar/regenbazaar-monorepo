@@ -4,10 +4,10 @@ import { Dialog } from "@headlessui/react"
 import albedo from "@albedo-link/intent"
 import { AnimatePresence, motion } from "framer-motion"
 import { X } from "lucide-react"
+import { useWallet } from "../providers/wallet-context"
 
 export default function ConnectWallet() {
-  const [walletAddress, setWalletAddress] = useState<string | null>(null)
-  const [selectedWallet, setSelectedWallet] = useState<string | null>(null)
+  const { walletAddress, setWalletAddress, selectedWallet, setSelectedWallet } = useWallet()
   const [isOpen, setIsOpen] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
 
