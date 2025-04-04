@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Provider, constants } from "starknet"
+import { useWallet } from "../../providers/wallet-context"
 
 // ABI for the REBAZ token contract (simplified version)
 const rebazAbi = [
@@ -22,7 +23,8 @@ const starknetProvider = new Provider({
   sequencer: { network: constants.NetworkName.SN_SEPOLIA },
 })
 
-export default function TokenDisplay({ walletAddress }: { walletAddress: string | null }) {
+export default function TokenDisplay() {
+  const { walletAddress } = useWallet()
   const [rebazBalance, setRebazBalance] = useState<string>("0")
   const [rwiRank, setRwiRank] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(false)
@@ -62,8 +64,8 @@ export default function TokenDisplay({ walletAddress }: { walletAddress: string 
   if (!walletAddress) return null
 
   return (
-    <div className="flex items-center space-x-6 text-sm">
-      <a href="#" className="font-medium text-white hover:underline">
+    <div className="flex items-center space-x-6">
+      <a href="#" className="font-medium text-white hover:underline border-b border-white">
         {userName}
       </a>
 
