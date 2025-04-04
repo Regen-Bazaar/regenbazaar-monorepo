@@ -1,35 +1,15 @@
 "use client";
-import { useEffect, useState } from "react";
 import ConnectWallet from "./ConnectWallet";
 import Image from "next/image";
-import { supabase } from "@/utils/supabaseClient";
+import { useWallet } from "@/context/WalletContext";
 
 export default function Navbar() {
 
 
-  const [userName, setUserName] = useState<string | null >(null);
+
+  const { isConnected } = useWallet();
 
 
-  useEffect(() => {
-    const getUserdata = async () => {
-      const user = supabase.auth.user();
-      if (user) {
-        const {data, error} = await supabase
-        .from('users')
-        .select('name')
-        .eq('wallet_address', user.email)
-        .single();
-
-        if (error) {
-          console.error("Error fetching user data:", error)
-        }
-        else {
-          setUserName(data?.name)
-        }
-      }
-    }
-    getUserdata();
-  }, [])
 
 
 
@@ -39,9 +19,9 @@ export default function Navbar() {
   return (
     <nav className="bg-white border-gray-200 dark:bg-gray-900">
 
-      {
-        userName ? (<p>welcome ! {userName} </p> ) : <p>loading ...</p>
-      }
+
+
+      {isConnected() ? "wallet connected" : "wallet disconnected"}
 
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <a href="https://flowbite.com/" className="flex items-center space-x-3 rtl:space-x-reverse">
