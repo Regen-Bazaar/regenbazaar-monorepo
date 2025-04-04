@@ -17,11 +17,13 @@ export default function ConnectWallet() {
 
       if (wallet === "albedo") {
         if (typeof albedo !== "undefined") {
-          const result = await albedo.publicKey()
-          pubkey = result.pubkey
+          const result = await albedo.publicKey({});
+          pubkey = result.pubkey;
         } else {
-          alert("Albedo is not available. Please visit https://albedo.link to set it up.")
-          return
+          alert(
+            "Albedo is not available. Please visit https://albedo.link to set it up."
+          );
+          return;
         }
       } else if (wallet === "freighter") {
         if (typeof window !== "undefined" && window.freighterApi) {

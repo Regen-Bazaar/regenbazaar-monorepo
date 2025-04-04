@@ -1,23 +1,32 @@
-"use client"
-import { useState } from "react"
-import ConnectWallet from "./ConnectWallet"
-import TokenDisplay from "./navbar/token-display"
-import Image from "next/image"
+"use client";
+import { useState } from "react";
+import ConnectWallet from "./ConnectWallet";
+import TokenDisplay from "./navbar/token-display";
+import Image from "next/image";
 
 export default function Navbar() {
   // Get wallet address from ConnectWallet component
-  const [walletAddress, setWalletAddress] = useState<string | null>(null)
+  const [walletAddress] = useState<string | null>(null);
 
   // This function will be passed to ConnectWallet to update the wallet address
-  const updateWalletAddress = (address: string | null) => {
-    setWalletAddress(address)
-  }
+  // const updateWalletAddress = (address: string | null) => {
+  //   setWalletAddress(address);
+  // };
 
   return (
     <nav className="bg-white border-gray-200 dark:bg-gray-900">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <a href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
-          <Image src="/regen_logo.png" width={50} height={50} className="" alt="Regen Logo" />
+        <a
+          href="https://flowbite.com/"
+          className="flex items-center space-x-3 rtl:space-x-reverse"
+        >
+          <Image
+            src="/regen_logo.png"
+            width={50}
+            height={50}
+            className=""
+            alt="Regen Logo"
+          />
         </a>
 
         {/* Middle section for token display when wallet is connected */}
@@ -53,8 +62,19 @@ export default function Navbar() {
             </svg>
           </button>
         </div>
-        <div className="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-cta">
+        <div
+          className="items-center justify-between hidden w-full md:flex md:w-auto md:order-1"
+          id="navbar-cta"
+        >
           <ul className="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+            <li>
+              <a
+                href="#"
+                className="block py-2 px-3 md:p-0 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
+              >
+                Dashboard
+              </a>
+            </li>
             <li>
               <a
                 href="#"
@@ -96,6 +116,5 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }
-

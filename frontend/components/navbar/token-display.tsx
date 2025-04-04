@@ -1,38 +1,42 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Provider, constants } from "starknet"
+import { useState, useEffect } from "react";
+// import { Provider, constants } from "starknet";
 
 // ABI for the REBAZ token contract (simplified version)
-const rebazAbi = [
-  {
-    name: "balanceOf",
-    type: "function",
-    inputs: [{ name: "account", type: "felt" }],
-    outputs: [{ name: "balance", type: "Uint256" }],
-    stateMutability: "view",
-  },
-]
+// const rebazAbi = [
+//   {
+//     name: "balanceOf",
+//     type: "function",
+//     inputs: [{ name: "account", type: "felt" }],
+//     outputs: [{ name: "balance", type: "Uint256" }],
+//     stateMutability: "view",
+//   },
+// ];
 
 // Replace with your actual REBAZ token contract address
-const REBAZ_ADDRESS = "0x..."
+// const REBAZ_ADDRESS = "0x...";
 
-// Starknet provider for testnet
-const starknetProvider = new Provider({
-  sequencer: { network: constants.NetworkName.SN_SEPOLIA },
-})
+// // Starknet provider for testnet
+// const starknetProvider = new Provider({
+//   sequencer: { network: constants.NetworkName.SN_SEPOLIA },
+// });
 
-export default function TokenDisplay({ walletAddress }: { walletAddress: string | null }) {
-  const [rebazBalance, setRebazBalance] = useState<string>("0")
-  const [rwiRank, setRwiRank] = useState<number>(0)
-  const [isLoading, setIsLoading] = useState(false)
-  const [userName, setUserName] = useState<string>("")
+export default function TokenDisplay({
+  walletAddress,
+}: {
+  walletAddress: string | null;
+}) {
+  const [rebazBalance, setRebazBalance] = useState<string>("0");
+  const [rwiRank, setRwiRank] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
     const fetchTokenBalance = async () => {
-      if (!walletAddress) return
+      if (!walletAddress) return;
 
-      setIsLoading(true)
+      setIsLoading(true);
       try {
         // For demonstration, using mock data
         // In production, replace with actual contract call:
@@ -45,21 +49,21 @@ export default function TokenDisplay({ walletAddress }: { walletAddress: string 
 
         // Mock data for demonstration
         setTimeout(() => {
-          setRebazBalance("150")
-          setRwiRank(70)
-          setUserName("Paul Burg")
-          setIsLoading(false)
-        }, 500)
+          setRebazBalance("150");
+          setRwiRank(70);
+          setUserName("Paul Burg");
+          setIsLoading(false);
+        }, 500);
       } catch (error) {
-        console.error("Error fetching REBAZ balance:", error)
-        setIsLoading(false)
+        console.error("Error fetching REBAZ balance:", error);
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchTokenBalance()
-  }, [walletAddress])
+    fetchTokenBalance();
+  }, [walletAddress]);
 
-  if (!walletAddress) return null
+  if (!walletAddress) return null;
 
   return (
     <div className="flex items-center space-x-6 text-sm">
@@ -85,6 +89,5 @@ export default function TokenDisplay({ walletAddress }: { walletAddress: string 
         )}
       </div>
     </div>
-  )
+  );
 }
-
