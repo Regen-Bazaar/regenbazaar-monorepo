@@ -97,22 +97,22 @@ export default function UserProfile() {
               <h2 className="text-xl font-bold mb-3 text-gray-200 bg-[#1f2937] rounded-md   p-4 ">STATS</h2>
               <div className="grid grid-cols-2 gap-2 text-sm bg-[#0a0f19] rounded-md  p-4 ">
                 <div className="text-gray-400">RAW RANK:</div>
-                <div className="text-right">{userStats.rawRank}</div>
+                <div className="text-right text-[#acf388]">{userStats.rawRank}</div>
                 
                 <div className="text-gray-400">VOTING POWER, vxREBA2:</div>
-                <div className="text-right">{userStats.votingPower}</div>
+                <div className="text-right text-[#acf388]">{userStats.votingPower}</div>
                 
                 <div className="text-gray-400">STAKED IP:</div>
-                <div className="text-right">{userStats.stakedIp}</div>
+                <div className="text-right text-[#acf388]">{userStats.stakedIp}</div>
                 
                 <div className="text-gray-400">APY FOR STAKED IP:</div>
-                <div className="text-right">{userStats.apyForStakedIp}</div>
+                <div className="text-right text-[#acf388]">{userStats.apyForStakedIp}</div>
                 
                 <div className="text-gray-400">STAKED TOKENS:</div>
-                <div className="text-right">{userStats.stakedTokens}</div>
+                <div className="text-right text-[#acf388]">{userStats.stakedTokens}</div>
                 
                 <div className="text-gray-400">APY FOR STAKED TOKENS:</div>
-                <div className="text-right">{userStats.apyForStakedTokens}</div>
+                <div className="text-right text-[#acf388]">{userStats.apyForStakedTokens}</div>
               </div>
             </div>
 
