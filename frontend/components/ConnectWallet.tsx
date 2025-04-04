@@ -16,10 +16,12 @@ export default function ConnectWallet() {
 
       if (wallet === "albedo") {
         if (typeof albedo !== "undefined") {
-          const result = await albedo.publicKey();
+          const result = await albedo.publicKey({});
           pubkey = result.pubkey;
         } else {
-          alert("Albedo is not available. Please visit https://albedo.link to set it up.");
+          alert(
+            "Albedo is not available. Please visit https://albedo.link to set it up."
+          );
           return;
         }
       } else if (wallet === "freighter") {
@@ -80,7 +82,11 @@ export default function ConnectWallet() {
           </motion.button>
 
           {/* Wallet Selection Modal */}
-          <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <Dialog
+            open={isOpen}
+            onClose={() => setIsOpen(false)}
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+          >
             <Dialog.Panel className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg relative w-96">
               <button
                 onClick={() => setIsOpen(false)}
