@@ -65,17 +65,17 @@ export default function UserProfile() {
                 className="w-full h-full object-cover"
               />
             </div>
-            <div>
-              <span className="text-lg font-medium">Paul Burg</span>
-              <div className="flex text-xs text-gray-400">
-                <span className="mr-4">RAW RANK: {userStats.rawRank}</span>
-                <span>vxREBA2: 150</span>
+            <div className='flex items-center gap-14'>
+              <span className="text-xl font-medium">Paul Burg</span>
+              <div className="flex text-md text-gray-400 ">
+                <span className="mr-4">RAW RANK: <span className='text-[#acf388]'> {userStats.rawRank}</span></span>
+                <span>vxREBA2: <span className='text-[#acf388]'> 150</span></span>
               </div>
             </div>
           </div>
           
           <div className="flex">
-            <button className="bg-green-500 text-sm px-3 py-1 rounded-md mr-2">Dashboard</button>
+            <button className="bg-[#acf388] text-gray-700 text-sm px-3 py-1 rounded-md mr-2">Dashboard</button>
             <button className="text-sm px-3 py-1 text-gray-400">Purchase</button>
             <button className="text-sm px-3 py-1 text-gray-400">Stake</button>
             <button className="text-sm px-3 py-1 text-gray-400">Vote</button>
