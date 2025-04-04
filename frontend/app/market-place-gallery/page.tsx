@@ -165,10 +165,10 @@ const MarketplaceGallery = () => {
         <div className="flex gap-2">
           <div className="relative">
             <div className="absolute left-3 top-1/2 -translate-y-1/2">
-              <Filter className="h-4 w-4 text-gray-400" />
+              <Filter className="h-4 w-4 text-black" />
             </div>
             <select
-              className="pl-10 pr-8 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="pl-10 pr-8 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
               value={selectedCategory || ""}
               onChange={(e) => setSelectedCategory(e.target.value || null)}
             >
@@ -179,7 +179,7 @@ const MarketplaceGallery = () => {
             </select>
           </div>
           <button
-            className="px-4 py-2 rounded-md border border-gray-300 bg-white text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="px-4 py-2 rounded-md border border-gray-300 bg-white text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
             onClick={() => {
               setSearchQuery("")
               setSelectedCategory(null)
