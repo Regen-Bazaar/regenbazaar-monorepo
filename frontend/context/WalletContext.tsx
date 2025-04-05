@@ -60,11 +60,11 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         setUserName(null)
         return
       }
-
       if (data) {
-        setUserName(data.name)
+        console.log("Setting user name:", data.name); // Debugging log
+        setUserName(data.name);
       } else {
-        setUserName(null)
+        console.log("No user data received");
       }
     } catch (error) {
       console.error("Error in fetchUserName:", error)

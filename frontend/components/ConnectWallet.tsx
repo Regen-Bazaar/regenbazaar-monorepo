@@ -20,7 +20,7 @@ export default function ConnectWallet() {
   } = useWallet()
 
 
-  console.log(`my username is : ${userName}`)
+
   return (
     <AnimatePresence>
       {walletAddress ? (
