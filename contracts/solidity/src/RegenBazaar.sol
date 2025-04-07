@@ -13,6 +13,8 @@ import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Recei
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
+ *
+ * @author Cyber-Mitch(Reentrancy)
  * @title RegenBazaar - Decentralized NFT Marketplace on Celo
  * @notice A secure marketplace for trading ERC721 and ERC1155 NFTs
  * @dev Inherits from OpenZeppelin's Ownable, Pausable, and ReentrancyGuard contracts
@@ -464,11 +466,11 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
 
 
         /**
-     * @notice Rejects direct ETH transfers to contract
+     * @notice Rejects direct CELO transfers to contract
      * @dev All payments must go through buyListing/buyListingsBatch
      */
     receive() external payable {
-        revert("Direct ETH transfers not allowed");
+        revert("Direct CELO transfers not allowed");
     }
 
     /**
