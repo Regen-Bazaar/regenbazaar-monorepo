@@ -66,8 +66,11 @@ export default function TokenDisplay({
   if (!walletAddress) return null;
 
   return (
-    <div className="flex items-center space-x-6 text-sm">
-      <a href="#" className="font-medium text-white hover:underline">
+    <div className="flex items-center space-x-6">
+      <a
+        href="#"
+        className="font-medium text-white hover:underline border-b border-white"
+      >
         {userName}
       </a>
 

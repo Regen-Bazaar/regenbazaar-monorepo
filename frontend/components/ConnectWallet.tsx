@@ -1,19 +1,20 @@
-"use client"
-import { useState } from "react"
-import { Dialog } from "@headlessui/react"
-import albedo from "@albedo-link/intent"
-import { AnimatePresence, motion } from "framer-motion"
-import { X } from "lucide-react"
+"use client";
+import { useState } from "react";
+import { Dialog } from "@headlessui/react";
+import albedo from "@albedo-link/intent";
+import { AnimatePresence, motion } from "framer-motion";
+import { X } from "lucide-react";
+import { useWallet } from "@/providers/wallet-context";
 
 export default function ConnectWallet() {
-  const [walletAddress, setWalletAddress] = useState<string | null>(null)
-  const [selectedWallet, setSelectedWallet] = useState<string | null>(null)
-  const [isOpen, setIsOpen] = useState(false)
-  const [showDropdown, setShowDropdown] = useState(false)
+  const { walletAddress, setWalletAddress, selectedWallet, setSelectedWallet } =
+    useWallet();
+  const [isOpen, setIsOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const handleConnect = async (wallet: string) => {
     try {
-      let pubkey: string | undefined
+      let pubkey: string | undefined;
 
       if (wallet === "albedo") {
         if (typeof albedo !== "undefined") {
@@ -27,38 +28,38 @@ export default function ConnectWallet() {
         }
       } else if (wallet === "freighter") {
         if (typeof window !== "undefined" && window.freighterApi) {
-          pubkey = await window.freighterApi.getPublicKey()
+          pubkey = await window.freighterApi.getPublicKey();
         } else {
-          alert("Freighter is not installed. Please install it.")
-          return
+          alert("Freighter is not installed. Please install it.");
+          return;
         }
       } else if (wallet === "metamask") {
         if (typeof window !== "undefined" && window.ethereum) {
           const accounts = await window.ethereum.request({
             method: "eth_requestAccounts",
-          })
-          pubkey = accounts[0]
+          });
+          pubkey = accounts[0];
         } else {
-          alert("Metamask is not installed. Please install it.")
-          return
+          alert("Metamask is not installed. Please install it.");
+          return;
         }
       }
 
       if (pubkey) {
-        setWalletAddress(pubkey)
-        setSelectedWallet(wallet)
-        setIsOpen(false)
+        setWalletAddress(pubkey);
+        setSelectedWallet(wallet);
+        setIsOpen(false);
       }
     } catch (error) {
-      console.error("Wallet Connection Error:", error)
+      console.error("Wallet Connection Error:", error);
     }
-  }
+  };
 
   const handleDisconnect = () => {
-    setWalletAddress(null)
-    setSelectedWallet(null)
-    setShowDropdown(false)
-  }
+    setWalletAddress(null);
+    setSelectedWallet(null);
+    setShowDropdown(false);
+  };
 
   return (
     <AnimatePresence>
@@ -135,6 +136,5 @@ export default function ConnectWallet() {
         </div>
       )}
     </AnimatePresence>
-  )
+  );
 }
-
