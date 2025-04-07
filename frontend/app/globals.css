@@ -1,24 +1,101 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-:root {
-  --background: #F8F4E4;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #121212;
-    --foreground: #ededed;
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
+    --background: #f8f4e4;
+    --foreground: #171717;
+
+    --primary: #45693e;
+    --primary-dark: #2c432a;
+    --primary-light: #588350;
+
+    --secondary: #f4ede4;
+    --secondary-dark: #e6dfd7;
+    --secondary-light: #faf6f1;
+
+    --accent: #2b1810;
+    --accent-light: #3d241b;
+    --accent-dark: #1a0f0a;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #121212;
+      --foreground: #ededed;
+
+      --primary: #588350;
+      --primary-dark: #45693e;
+      --primary-light: #6a9b61;
+    }
+  }
+}
+
+@layer utilities {
+  .bg-primary {
+    background-color: var(--primary);
+  }
+  .bg-primary-dark {
+    background-color: var(--primary-dark);
+  }
+  .bg-primary-light {
+    background-color: var(--primary-light);
+  }
+
+  .bg-secondary {
+    background-color: var(--secondary);
+  }
+  .bg-secondary-dark {
+    background-color: var(--secondary-dark);
+  }
+  .bg-secondary-light {
+    background-color: var(--secondary-light);
+  }
+
+  .bg-accent {
+    background-color: var(--accent);
+  }
+  .bg-accent-light {
+    background-color: var(--accent-light);
+  }
+  .bg-accent-dark {
+    background-color: var(--accent-dark);
+  }
+
+  .text-primary {
+    color: var(--primary);
+  }
+  .text-primary-dark {
+    color: var(--primary-dark);
+  }
+  .text-primary-light {
+    color: var(--primary-light);
+  }
+
+  .text-secondary {
+    color: var(--secondary);
+  }
+  .text-secondary-dark {
+    color: var(--secondary-dark);
+  }
+  .text-secondary-light {
+    color: var(--secondary-light);
+  }
+
+  .text-accent {
+    color: var(--accent);
+  }
+  .text-accent-light {
+    color: var(--accent-light);
+  }
+  .text-accent-dark {
+    color: var(--accent-dark);
   }
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, sans-serif;
 }
