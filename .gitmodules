@@ -4,6 +4,9 @@
 [submodule "regenbazaar/packages/foundry/lib/openzeppelin-contracts"]
 	path = regenbazaar/packages/foundry/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "regenbazaar/packages/foundry/lib/solidity-bytes-utils"]
+	path = regenbazaar/packages/foundry/lib/solidity-bytes-utils
+	url = https://github.com/GNSPS/solidity-bytes-utils
 [submodule "contracts/solidity/lib/forge-std"]
 	path = contracts/solidity/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
