@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@albedo-link/intent": "^0.12.0",
+    "@headlessui/react": "^1.7.19",
+    "@tanstack/react-query": "^5.71.5",
+    "framer-motion": "^12.6.3",
+    "lucide-react": "^0.487.0",
+    "starknet": "^6.24.1",
+    "viem": "^2.25.0",
+    "wagmi": "^2.14.16"
+  }
+}
