@@ -70,10 +70,6 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
       console.error("Error in fetchUserName:", error)
       setUserName(null)
     }
-    if (error) {
-      console.error("Supabase error fetching user name:", error.message);
-      return;
-    }
 
   }
 

@@ -2,14 +2,13 @@
 
 import { Dialog } from "@headlessui/react"
 import { AnimatePresence, motion } from "framer-motion"
-import { X } from "lucide-react"
+import { LogOut, X } from "lucide-react"
 import WalletMenuDropdown from "./WalletMenuDropdown"
 import { useWallet } from "../context/WalletContext"
 
 export default function ConnectWallet() {
   const {
     walletAddress,
-    userName,
     isWalletModalOpen,
     openMenuDropdown,
     connectWallet,
@@ -28,15 +27,9 @@ export default function ConnectWallet() {
           <div className="relative">
             <button
               onClick={() => setOpenMenuDropdown(!openMenuDropdown)}
-              className="text-sm dark:text-white bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer"
+              className="text-sm dark:text-white bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer flex items-center justify-center gap-1 "
             >
-              {userName ? (
-                <span>{userName}</span>
-              ) : (
-                <span>
-                  {walletAddress.substring(0, 6)}...{walletAddress.slice(-4)}
-                </span>
-              )}
+              <LogOut size={20} /> Disconnect
             </button>
 
             <WalletMenuDropdown

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import UserForm from "./UserForm"
 import { useWallet } from "@/context/WalletContext"
 
@@ -13,17 +13,35 @@ interface WalletMenuDropdownProps {
 export default function WalletMenuDropdown({ onClick, wallet, openMenuDropdown }: WalletMenuDropdownProps) {
   const [openNameModal, setOpenNameModal] = useState(false)
   const { userName } = useWallet()
+  const menuRef = useRef<HTMLDivElement | null>(null)
 
   const closeNameModal = () => {
     setOpenNameModal(false)
   }
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenNameModal(false)
+      }
+    }
+
+    if (openNameModal) {
+      document.addEventListener("mousedown", handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [openNameModal])
+
   return (
     <div
+      ref={menuRef}
       className={`w-[200px] absolute top-[120%] left-[-25%] bg-white flex flex-col items-stretch justify-start gap-1 rounded-sm overflow-hidden transition-all duration-150 ease-in-out ${openMenuDropdown ? "h-fit py-3 " : "h-0"}`}
     >
       {userName && (
-        <div className="py-2 px-4 text-black font-medium border-b border-gray-200">Signed in as {userName}</div>
+        <div className="py-2 px-4 text-blue-500 font-medium border-b border-gray-200">Signed in as {userName}</div>
       )}
 
       <button
@@ -41,4 +59,3 @@ export default function WalletMenuDropdown({ onClick, wallet, openMenuDropdown }
     </div>
   )
 }
-

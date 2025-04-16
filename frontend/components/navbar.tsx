@@ -1,13 +1,17 @@
 "use client";
+import { useWallet } from "@/context/WalletContext";
 import ConnectWallet from "./ConnectWallet";
 import Image from "next/image";
-import { useWallet } from "@/context/WalletContext";
+import { User } from "lucide-react";
+
 
 export default function Navbar() {
 
 
+  const {userName, walletAddress} = useWallet();
 
-  const { isConnected } = useWallet();
+
+
 
 
 
@@ -21,12 +25,18 @@ export default function Navbar() {
 
 
 
-      {isConnected() ? "wallet connected" : "wallet disconnected"}
+
+
+
 
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <a href="https://flowbite.com/" className="flex items-center space-x-3 rtl:space-x-reverse">
           <Image src="/regen_logo.png" width={50} height={50} className="" alt="Regen Logo" />
         </a>
+
+
+ {walletAddress && userName ? <span className="flex items-center justify-center gap-1" > <User size={20} />  {userName}  </span> :  null }
+
         <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
           <ConnectWallet />
 
