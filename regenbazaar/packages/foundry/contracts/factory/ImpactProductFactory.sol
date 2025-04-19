@@ -18,26 +18,19 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
     bytes32 public constant VERIFIER_ROLE = keccak256("VERIFIER_ROLE");
     
     IImpactProductNFT public impactProductNFT;
-    
-    // Platform fee settings
+
     address public platformFeeReceiver;
-    uint96 public platformRoyaltyBps = 500; // 5% in basis points
-    uint96 public defaultCreatorRoyaltyBps = 500; // 5% in basis points
-    
-    // Impact calculation parameters
+    uint96 public platformRoyaltyBps = 500; 
+    uint96 public defaultCreatorRoyaltyBps = 500; 
+
     struct ImpactParams {
         string category;
-        uint256 baseMultiplier;  // Base multiplier for the category in basis points
-        bool verified;           // Whether this category is verified
+        uint256 baseMultiplier;  
+        bool verified;           
     }
-    
-    // Mapping of impact category to its parameters
     mapping(string => ImpactParams) public impactParameters;
-    
-    // Whitelisted impact categories
     string[] public impactCategories;
-    
-    // Events
+
     event ImpactProductCreated(
         uint256 indexed tokenId, 
         address indexed creator, 
@@ -67,15 +60,14 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
         _grantRole(ADMIN_ROLE, msg.sender);
         _grantRole(CREATOR_ROLE, msg.sender);
         _grantRole(VERIFIER_ROLE, msg.sender);
-        
-        // Add initial impact categories
-        _addImpactCategory("Community gardens", 1000); // 1.0x multiplier
-        _addImpactCategory("Tree preservation", 2500); // 2.5x multiplier
-        _addImpactCategory("Eco tourism", 1500);       // 1.5x multiplier
-        _addImpactCategory("Educational programs", 2000); // 2.0x multiplier
-        _addImpactCategory("Wildlife Conservation", 3000); // 3.0x multiplier
-        _addImpactCategory("CO2 Emissions Reduction", 3500); // 3.5x multiplier
-        _addImpactCategory("Waste Management", 1200); // 1.2x multiplier
+
+        _addImpactCategory("Community gardens", 1000); 
+        _addImpactCategory("Tree preservation", 2500); 
+        _addImpactCategory("Eco tourism", 1500);
+        _addImpactCategory("Educational programs", 2000); 
+        _addImpactCategory("Wildlife Conservation", 3000); 
+        _addImpactCategory("CO2 Emissions Reduction", 3500); 
+        _addImpactCategory("Waste Management", 1200);
     }
     
     /**
@@ -124,11 +116,9 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
         require(listingPrice > 0, "Price must be positive");
         require(bytes(category).length > 0, "Category cannot be empty");
         require(_isCategorySupported(category), "Unsupported impact category");
-        
-        // Calculate final impact value with category multiplier
+
         uint256 finalImpactValue = _calculateImpactValue(category, baseImpactValue);
-        
-        // Prepare impact data struct
+
         IImpactProductNFT.ImpactData memory impactData = IImpactProductNFT.ImpactData({
             category: category,
             impactValue: finalImpactValue,
@@ -136,17 +126,16 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
             startDate: startDate,
             endDate: endDate,
             beneficiaries: beneficiaries,
-            verified: false, // Initial creation is always unverified
+            verified: false,
             metadataURI: metadataURI
         });
-        
-        // Create the impact product NFT
+
         tokenId = impactProductNFT.createImpactProduct(
-            msg.sender,                   // Creator receives the NFT
-            impactData,                   // Impact data
-            listingPrice,                 // Listing price
-            msg.sender,                   // Creator receives royalties
-            defaultCreatorRoyaltyBps      // Default creator royalty percentage
+            msg.sender,
+            impactData,
+            listingPrice,
+            msg.sender,
+            defaultCreatorRoyaltyBps
         );
         
         emit ImpactProductCreated(
@@ -212,17 +201,12 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
         onlyRole(ADMIN_ROLE)
     {
         require(_isCategorySupported(category), "Category does not exist");
-        
-        // Find and remove the category from the array
+
         for (uint256 i = 0; i < impactCategories.length; i++) {
             if (keccak256(bytes(impactCategories[i])) == keccak256(bytes(category))) {
-                // Replace with the last element and pop
                 impactCategories[i] = impactCategories[impactCategories.length - 1];
                 impactCategories.pop();
-                
-                // Remove from mapping
                 delete impactParameters[category];
-                
                 emit CategoryRemoved(category);
                 break;
             }
@@ -240,9 +224,7 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
     {
         require(_isCategorySupported(category), "Category does not exist");
         require(baseMultiplier > 0, "Multiplier must be positive");
-        
         impactParameters[category].baseMultiplier = baseMultiplier;
-        
         emit ImpactCalculationParamsUpdated(category, baseMultiplier);
     }
     
@@ -254,7 +236,7 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
         external
         onlyRole(ADMIN_ROLE)
     {
-        require(newRoyaltyBps <= 2000, "Platform royalty too high"); // Max 20%
+        require(newRoyaltyBps <= 2000, "Platform royalty too high");
         platformRoyaltyBps = newRoyaltyBps;
     }
     
@@ -266,7 +248,7 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
         external
         onlyRole(ADMIN_ROLE)
     {
-        require(newRoyaltyBps <= 2000, "Creator royalty too high"); // Max 20%
+        require(newRoyaltyBps <= 2000, "Creator royalty too high");
         defaultCreatorRoyaltyBps = newRoyaltyBps;
     }
     
@@ -325,11 +307,7 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
         require(bytes(category).length > 0, "Category cannot be empty");
         require(baseMultiplier > 0, "Multiplier must be positive");
         require(!_isCategorySupported(category), "Category already exists");
-        
-        // Add to categories array
         impactCategories.push(category);
-        
-        // Set parameters
         impactParameters[category] = ImpactParams({
             category: category,
             baseMultiplier: baseMultiplier,
@@ -360,10 +338,7 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
         returns (uint256 calculatedValue)
     {
         ImpactParams memory params = impactParameters[category];
-        
-        // Apply category multiplier
-        calculatedValue = (baseValue * params.baseMultiplier) / 10000; // Divide by 10000 for basis points
-        
+        calculatedValue = (baseValue * params.baseMultiplier) / 10000; 
         return calculatedValue;
     }
 }

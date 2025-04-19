@@ -20,17 +20,13 @@ contract REBAZToken is IREBAZ, ERC20, ERC20Burnable, Pausable, AccessControl, Re
     bytes32 public constant SLASHER_ROLE = keccak256("SLASHER_ROLE");
     bytes32 public constant GOVERNANCE_ROLE = keccak256("GOVERNANCE_ROLE");
 
-    // Staking parameters
     uint256 public minStakeDuration;
     uint256 public maxStakeDuration;
-    uint256 public baseRewardRate; // In basis points (1% = 100)
-
-    // Governance parameters
+    uint256 public baseRewardRate; 
     uint256 public proposalThreshold;
     uint256 public votingPeriod;
     uint256 public votingDelay;
 
-    // Staking storage
     struct StakeInfo {
         uint256 amount;
         uint256 startTime;
@@ -38,12 +34,10 @@ contract REBAZToken is IREBAZ, ERC20, ERC20Burnable, Pausable, AccessControl, Re
         bool withdrawn;
     }
 
-    // Mapping: user => stake ID => stake info
     mapping(address => mapping(uint256 => StakeInfo)) private _stakes;
     mapping(address => uint256) private _stakeCount;
     mapping(address => uint256) private _totalStaked;
 
-    // Validator slashing tracking
     mapping(address => uint256) private _slashedAmount;
 
     /**
@@ -58,17 +52,14 @@ contract REBAZToken is IREBAZ, ERC20, ERC20Burnable, Pausable, AccessControl, Re
         _grantRole(SLASHER_ROLE, admin);
         _grantRole(GOVERNANCE_ROLE, admin);
 
-        // Set initial staking parameters
         minStakeDuration = 7 days;
         maxStakeDuration = 365 days;
-        baseRewardRate = 500; // 5% base APR
+        baseRewardRate = 500; 
 
-        // Set initial governance parameters
-        proposalThreshold = 100000 * 10 ** decimals(); // 100,000 REBAZ
-        votingPeriod = 40320; // ~7 days in blocks (assuming 15s block time)
-        votingDelay = 11520; // ~2 days in blocks
+        proposalThreshold = 100000 * 10 ** decimals(); 
+        votingPeriod = 40320; 
+        votingDelay = 11520;
 
-        // Mint initial supply to admin
         _mint(admin, initialSupply);
     }
 
@@ -110,10 +101,8 @@ contract REBAZToken is IREBAZ, ERC20, ERC20Burnable, Pausable, AccessControl, Re
         require(duration <= maxStakeDuration, "Staking duration too long");
         require(balanceOf(msg.sender) >= amount, "Insufficient balance");
 
-        // Transfer tokens from user to contract
         _transfer(msg.sender, address(this), amount);
 
-        // Create new stake entry
         uint256 stakeId = _stakeCount[msg.sender];
         uint256 startTime = block.timestamp;
         uint256 endTime = startTime + duration;
@@ -121,7 +110,6 @@ contract REBAZToken is IREBAZ, ERC20, ERC20Burnable, Pausable, AccessControl, Re
         _stakes[msg.sender][stakeId] =
             StakeInfo({ amount: amount, startTime: startTime, endTime: endTime, withdrawn: false });
 
-        // Update user's total staked amount and stake count
         _totalStaked[msg.sender] += amount;
         _stakeCount[msg.sender] += 1;
 
@@ -141,21 +129,16 @@ contract REBAZToken is IREBAZ, ERC20, ERC20Burnable, Pausable, AccessControl, Re
         require(stakeInfo.amount > 0, "Stake does not exist");
         require(!stakeInfo.withdrawn, "Stake already withdrawn");
 
-        // Check if lock period has ended
         bool matured = block.timestamp >= stakeInfo.endTime;
 
-        // Calculate reward (no reward if withdrawn early)
         reward = matured ? calculateReward(stakeId) : 0;
         amount = stakeInfo.amount;
 
-        // Mark stake as withdrawn
         stakeInfo.withdrawn = true;
         _totalStaked[msg.sender] -= amount;
 
-        // Transfer staked tokens back to user
         _transfer(address(this), msg.sender, amount);
 
-        // Mint reward tokens if applicable
         if (reward > 0) {
             _mint(msg.sender, reward);
         }
@@ -176,25 +159,18 @@ contract REBAZToken is IREBAZ, ERC20, ERC20Burnable, Pausable, AccessControl, Re
             return 0;
         }
 
-        // Calculate duration in years (with precision)
         uint256 durationInSeconds = stakeInfo.endTime - stakeInfo.startTime;
-        uint256 durationInYears = (durationInSeconds * 10000) / 365 days; // Scaled by 10000 for precision
+        uint256 durationInYears = (durationInSeconds * 10000) / 365 days;
 
-        // Calculate reward - base rate plus duration bonus
         uint256 rewardRate = baseRewardRate;
 
-        // Add duration bonus (longer stakes get higher APR)
         if (durationInSeconds >= 180 days) {
-            rewardRate += 100; // +1% for 6+ months
+            rewardRate += 100; 
         }
         if (durationInSeconds >= 365 days) {
-            rewardRate += 200; // +2% more for 12+ months
+            rewardRate += 200;
         }
 
-        // Calculate actual reward
-        // Formula: amount * rewardRate * durationInYears / (10000 * 10000)
-        // First 10000 is from basis points (100% = 10000)
-        // Second 10000 is from our durationInYears scaling
         reward = (stakeInfo.amount * rewardRate * durationInYears) / (10000 * 10000);
         return reward;
     }
@@ -234,7 +210,6 @@ contract REBAZToken is IREBAZ, ERC20, ERC20Burnable, Pausable, AccessControl, Re
      * @return votingPower The user's voting power
      */
     function getVotingPower(address user) external view returns (uint256 votingPower) {
-        // Voting power = balance + staked amount
         return balanceOf(user) + _totalStaked[user];
     }
 
@@ -256,17 +231,14 @@ contract REBAZToken is IREBAZ, ERC20, ERC20Burnable, Pausable, AccessControl, Re
         require(amount > 0, "Cannot slash 0 tokens");
         require(validatorBalance + validatorStaked >= amount, "Slash amount exceeds validator's tokens");
 
-        // First slash from liquid balance
         uint256 slashFromBalance = amount < validatorBalance ? amount : validatorBalance;
         if (slashFromBalance > 0) {
             _burn(validator, slashFromBalance);
         }
 
-        // If needed, slash from staked tokens
         if (slashFromBalance < amount) {
             uint256 remainingToSlash = amount - slashFromBalance;
             _slashedAmount[validator] += remainingToSlash;
-            // Note: Actual slashing from stakes happens when they try to withdraw
         }
 
         emit ValidatorSlashed(validator, msg.sender, amount, reason);
@@ -284,7 +256,7 @@ contract REBAZToken is IREBAZ, ERC20, ERC20Burnable, Pausable, AccessControl, Re
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         require(_minStakeDuration <= _maxStakeDuration, "Min duration must be <= max duration");
-        require(_baseRewardRate <= 5000, "Base reward rate too high"); // Max 50% APR
+        require(_baseRewardRate <= 5000, "Base reward rate too high");
 
         minStakeDuration = _minStakeDuration;
         maxStakeDuration = _maxStakeDuration;
@@ -310,22 +282,4 @@ contract REBAZToken is IREBAZ, ERC20, ERC20Burnable, Pausable, AccessControl, Re
         emit GovernanceParamsUpdated(_proposalThreshold, _votingPeriod, _votingDelay);
     }
 
-    /**
-     * @notice Override ERC20 _beforeTokenTransfer with pause functionality
-     */
-    // function _beforeTokenTransfer(address from, address to, uint256 amount)
-    //     internal
-    //     whenNotPaused
-    //     override
-    // {
-    //     super._beforeTokenTransfer(from, to, amount);
-    // }
-
-    // function SLASHER_ROLE() external pure returns (bytes32) {
-    //     return keccak256("SLASHER_ROLE");
-    // }
-
-    // function GOVERNANCE_ROLE() external pure returns (bytes32) {
-    //     return keccak256("GOVERNANCE_ROLE");
-    // }
 }

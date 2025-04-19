@@ -24,17 +24,14 @@ contract ImpactProductNFT is
 {
     using Strings for uint256;
 
-    // Custom URI storage
     mapping(uint256 => string) private _tokenURIs;
     string private _baseTokenURI;
 
-    // Custom enumeration
     uint256[] private _allTokens;
     mapping(uint256 => uint256) private _allTokensIndex;
     mapping(address => uint256[]) private _ownedTokens;
     mapping(uint256 => uint256) private _ownedTokensIndex;
 
-    // Replace Counters with simple uint256
     uint256 private _nextTokenId;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -42,23 +39,17 @@ contract ImpactProductNFT is
     bytes32 public constant VERIFIER_ROLE = keccak256("VERIFIER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
-    // Platform fee receiver
     address public platformFeeReceiver;
-    uint96 public platformFeeBps = 1000; // 10% in basis points
+    uint96 public platformFeeBps = 1000; 
 
-    // Mapping tokenId to impact data
     mapping(uint256 => ImpactData) private _impactData;
 
-    // Mapping tokenId to price
     mapping(uint256 => uint256) private _tokenPrices;
 
-    // Mapping creator to their tokens
     mapping(address => uint256[]) private _creatorTokens;
 
-    // Mapping category to token IDs
     mapping(string => uint256[]) private _categoryTokens;
 
-    // Add this struct definition after your state variables
     struct ImpactData {
         string category;
         uint256 impactValue;
@@ -135,7 +126,7 @@ contract ImpactProductNFT is
         require(impactData.impactValue > 0, "Impact value must be positive");
         require(price > 0, "Price must be positive");
         require(royaltyReceiver != address(0), "Invalid royalty receiver");
-        require(royaltyFraction <= 1000, "Royalty too high"); // Max 10%
+        require(royaltyFraction <= 1000, "Royalty too high");
 
         uint256 currentId = _nextTokenId;
         _nextTokenId++;
@@ -278,7 +269,7 @@ contract ImpactProductNFT is
             "Not authorized to update royalty"
         );
         require(receiver != address(0), "Invalid royalty receiver");
-        require(royaltyFraction <= 1000, "Royalty too high"); // Max 10%
+        require(royaltyFraction <= 1000, "Royalty too high");
 
         _setTokenRoyalty(tokenId, receiver, royaltyFraction);
 
@@ -353,7 +344,7 @@ contract ImpactProductNFT is
         score = data.impactValue;
 
         if (data.verified) {
-            score = (score * 12) / 10; // +20% for verified impact
+            score = (score * 12) / 10;
         }
 
         if (data.endDate > data.startDate) {
@@ -404,7 +395,7 @@ contract ImpactProductNFT is
      * @param newFeeBps New fee in basis points (e.g., 1000 = 10%)
      */
     function setPlatformFeeBps(uint96 newFeeBps) external onlyRole(ADMIN_ROLE) {
-        require(newFeeBps <= 3000, "Fee too high"); // Max 30%
+        require(newFeeBps <= 3000, "Fee too high"); 
         platformFeeBps = newFeeBps;
     }
 
@@ -435,10 +426,6 @@ contract ImpactProductNFT is
         uint256 tokenId,
         uint256 batchSize
     ) internal virtual whenNotPaused {
-        // Don't call super if it's not compatible
-        // super._beforeTokenTransfer(from, to, tokenId, batchSize);  
-
-        // Just implement your enumeration logic
         if (from == address(0)) {
             _addTokenToAllTokensEnumeration(tokenId);
         } else if (from != to) {
