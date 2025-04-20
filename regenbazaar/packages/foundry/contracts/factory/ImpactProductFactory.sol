@@ -61,12 +61,12 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
         _grantRole(CREATOR_ROLE, msg.sender);
         _grantRole(VERIFIER_ROLE, msg.sender);
 
-        _addImpactCategory("Community gardens", 1000); 
-        _addImpactCategory("Tree preservation", 2500); 
+        _addImpactCategory("Community gardens", 1000);
+        _addImpactCategory("Tree preservation", 2500);
         _addImpactCategory("Eco tourism", 1500);
-        _addImpactCategory("Educational programs", 2000); 
-        _addImpactCategory("Wildlife Conservation", 3000); 
-        _addImpactCategory("CO2 Emissions Reduction", 3500); 
+        _addImpactCategory("Educational programs", 2000);
+        _addImpactCategory("Wildlife Conservation", 3000);
+        _addImpactCategory("CO2 Emissions Reduction", 3500);
         _addImpactCategory("Waste Management", 1200);
     }
     

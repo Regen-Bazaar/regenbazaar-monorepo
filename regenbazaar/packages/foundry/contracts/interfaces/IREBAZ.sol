@@ -102,4 +102,11 @@ interface IREBAZ is IERC20, IAccessControl {
      * @param votingDelay Delay before voting starts in blocks
      */
     function updateGovernanceParams(uint256 proposalThreshold, uint256 votingPeriod, uint256 votingDelay) external;
+
+    /**
+     * @notice Mint new tokens to a specified address
+     * @param to Address to receive the newly minted tokens
+     * @param amount Amount of tokens to mint
+     */
+    function mint(address to, uint256 amount) external;
 }
