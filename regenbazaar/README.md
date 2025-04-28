@@ -25,7 +25,7 @@
 
 ```bash
 git clone https://github.com/Regen-Bazaar/regenbazaar-monorepo.git
-cd regenbazaar-monorepo
+cd regenbazaar
 npm install
 ```
 
