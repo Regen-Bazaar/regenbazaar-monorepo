@@ -1,80 +1,86 @@
-# 🏗 Scaffold-ETH 2
+# 🏗 Regen Bazaar Monorepo
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+<p align="center">
+  <a href="https://docs.scaffoldeth.io">Scaffold-ETH 2 Docs</a> |
+  <a href="https://scaffoldeth.io">Scaffold-ETH 2 Website</a>
+</p>
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+> An open-source toolkit for building dapps on Ethereum.  
+> Powers the Regen Bazaar platform frontend (Next.js, TypeScript, Wagmi/Viem) and smart contracts (Foundry).
 
-⚙️ Built using NextJS, RainbowKit, Foundry, Wagmi, Viem, and Typescript.
-
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
-
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+---
 
 ## Requirements
 
-Before you begin, you need to install the following tools:
+- Node.js ≥ 18.18  
+- Yarn (v1 or v2+)  
+- Git  
+- Foundry (Forge, Cast, Anvil)
 
-- [Node (>= v18.18)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
+---
 
 ## Quickstart
 
-To get started with Scaffold-ETH 2, follow the steps below:
+### 1. Clone & install
 
-1. Install dependencies if it was skipped in CLI:
-
-```
-cd my-dapp-example
-yarn install
-```
-
-2. Run a local network in the first terminal:
-
-```
-yarn chain
+```bash
+git clone https://github.com/Regen-Bazaar/regenbazaar-monorepo.git
+cd regenbazaar-monorepo
+npm install
 ```
 
-This command starts a local Ethereum network using Foundry. The network runs on your local machine and can be used for testing and development. You can customize the network configuration in `packages/foundry/foundry.toml`.
+### 2. Start a local envirobment like Ganache using anvil
 
-3. On a second terminal, deploy the test contract:
-
-```
-yarn deploy
-```
-
-This command deploys a test smart contract to the local network. The contract is located in `packages/foundry/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/foundry/script` to deploy the contract to the network. You can also customize the deploy script.
-
-4. On a third terminal, start your NextJS app:
-
-```
-yarn start
+```bash
+# Launch Anvil via Foundry
+anvil
 ```
 
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
+### 3. Compile smart contracts
 
-Run smart contract test with `yarn foundry:test`
+```bash
+cd packages/foundry
+forge install OpenZeppelin/openzeppelin-contracts   # only first time
+forge build --via-ir # We're using --via-ir to solve "Stack too deep" errors .This flag enables Solidity's Intermediate Representation optimization
+```
 
-- Edit your smart contracts in `packages/foundry/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/foundry/script`
+## Contract Structure
+
+Inside `packages/foundry/contracts` you'll find:
+
+- **tokens/REBAZToken.sol**  
+  ERC20 governance & utility token  
+- **tokens/ImpactProductNFT.sol**  
+  ERC721 NFT for real-world impact projects  
+- **factory/ImpactProductFactory.sol**  
+  Factory to mint new ImpactProductNFTs  
+- **marketplace/RegenBazaarMarketplace.sol**  
+  Listing and trading of impact NFTs  
+- **staking/ImpactProductStaking.sol**  
+  Staking logic for REBAZ tokens & NFTs  
+- **interfaces/**  
+  All contract interfaces (IREBAZ, IImpactProductNFT, IImpactProductFactory, IImpactProductNFT, IImpactProductStaking)
+
+---
 
 
-## Documentation
+## Troubleshooting
 
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
+- **Imports not found**  
+  Ensure remappings in `packages/foundry/remappings.txt` or `foundry.toml`:  
+  ```
+  @openzeppelin/=lib/openzeppelin-contracts/
+  ```
+- **Linearization errors**  
+  When using multiple ERC721 extensions, put the more-specific contract first in the `is` list:
+  ```solidity
+  contract MyNFT is ERC721URIStorage, ERC721Enumerable { … }
+  ```
 
-To know more about its features, check out our [website](https://scaffoldeth.io).
 
-## Contributing to Scaffold-ETH 2
 
-We welcome contributions to Scaffold-ETH 2!
 
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+
+---
+
+© 2024 Regen Bazaar · Built on Scaffold-ETH 2 · MIT License  
