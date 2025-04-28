@@ -24,7 +24,11 @@
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/Regen-Bazaar/regenbazaar-monorepo.git
+# Clone using SSH (recommended)
+git clone https://github.com/trudransh/regenbazaar-monorepo.git
+# Or with HTTPS
+# git clone https://github.com/Regen-Bazaar/regenbazaar-monorepo.git
+
 cd regenbazaar-monorepo
 npm install
 ```
@@ -41,13 +45,13 @@ anvil
 ```bash
 cd regenbazaar/packages/foundry
 
-# Install dependencies (only first time)
-forge install
+# Clean and install dependencies (if you encounter issues)
+rm -rf lib/forge-std/ lib/openzeppelin-contracts/
 forge install foundry-rs/forge-std --no-commit
 forge install OpenZeppelin/openzeppelin-contracts --no-commit
 
 # Build contracts
-forge build --via-ir # We're using --via-ir to solve "Stack too deep" errors. This flag enables Solidity's Intermediate Representation optimization
+forge compile
 ```
 
 ## Contract Structure
@@ -88,16 +92,12 @@ forge install foundry-rs/forge-std --no-commit
 # Reinstall OpenZeppelin
 rm -rf lib/openzeppelin-contracts
 forge install OpenZeppelin/openzeppelin-contracts --no-commit
-
-# Install solidity-bytes-utils if missing
-forge install Vectorized/solidity-bytes-utils --no-commit
 ```
 
 ### Import Errors
 - Ensure remappings in `packages/foundry/remappings.txt` or `foundry.toml` include:  
   ```
   @openzeppelin/=lib/openzeppelin-contracts/
-  solidity-bytes-utils/=lib/solidity-bytes-utils/
   forge-std/=lib/forge-std/src/
   ```
 
