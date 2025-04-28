@@ -441,14 +441,14 @@ contract ImpactProductNFT is
     /**
      * @dev Required override for _burn from both ERC721URIStorage and ERC721Enumerable
      */
-    function  _burn(
-        uint256 tokenId
-    ) internal override {
-        super._burn(tokenId);
+    // function  _burn(
+    //     uint256 tokenId
+    // ) internal override {
+    //     super._burn(tokenId);
 
-        // Clear royalty information
-        _resetTokenRoyalty(tokenId);
-    }
+    //     // Clear royalty information
+    //     _resetTokenRoyalty(tokenId);
+    // }
 
     /**
      * @dev Required override for tokenURI from ERC721URIStorage

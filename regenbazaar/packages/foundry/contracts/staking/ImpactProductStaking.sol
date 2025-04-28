@@ -209,15 +209,15 @@ contract ImpactProductStaking is
         return _stakes[tokenId];
     }
     
-    /**
-     * @notice Calculate pending rewards for a staked NFT
-     * @param tokenId ID of the staked NFT
-     * @return pendingRewards Amount of REBAZ tokens available to claim
-     */
+    // /**
+    //  * @notice Calculate pending rewards for a staked NFT
+    //  * @param tokenId ID of the staked NFT
+    //  * @return pendingRewards Amount of REBAZ tokens available to claim
+    //  */
     function pendingRewards(uint256 tokenId) 
         external 
         view 
-        returns (uint256 pendingRewards) 
+        returns (uint256 rewardAmount) 
     {
         return _calculateRewards(tokenId);
     }
