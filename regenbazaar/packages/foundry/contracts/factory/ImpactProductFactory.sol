@@ -224,7 +224,8 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
     {
         require(_isCategorySupported(category), "Category does not exist");
         require(baseMultiplier > 0, "Multiplier must be positive");
-        impactParameters[category].baseMultiplier = baseMultiplier;
+        _tempCategory = category;
+        _calculateAndStoreImpactParams(_tempCategory, baseMultiplier, false);
         emit ImpactCalculationParamsUpdated(category, baseMultiplier);
     }
     
@@ -308,11 +309,7 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
         require(baseMultiplier > 0, "Multiplier must be positive");
         require(!_isCategorySupported(category), "Category already exists");
         impactCategories.push(category);
-        impactParameters[category] = ImpactParams({
-            category: category,
-            baseMultiplier: baseMultiplier,
-            verified: false
-        });
+        _calculateAndStoreImpactParams(category, baseMultiplier, false);
         
         emit CategoryAdded(category, baseMultiplier);
     }
@@ -340,5 +337,17 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
         ImpactParams memory params = impactParameters[category];
         calculatedValue = (baseValue * params.baseMultiplier) / 10000; 
         return calculatedValue;
+    }
+
+    // Use temporary storage to reduce stack usage
+    string _tempCategory;
+
+    // Then define a helper function
+    function _calculateAndStoreImpactParams(string memory cat, uint256 mult, bool verified) private {
+        impactParameters[cat] = ImpactParams({
+            category: cat,
+            baseMultiplier: mult,
+            verified: verified
+        });
     }
 }

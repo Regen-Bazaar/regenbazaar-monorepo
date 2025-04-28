@@ -420,12 +420,13 @@ contract ImpactProductNFT is
     /**
      * @notice Handle token transfers including pausing and enumeration
      */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
+    function _update(
+        address to, 
         uint256 tokenId,
-        uint256 batchSize
-    ) internal virtual whenNotPaused {
+        address auth
+    ) internal virtual override whenNotPaused returns (address) {
+        address from = _ownerOf(tokenId);
+        
         if (from == address(0)) {
             _addTokenToAllTokensEnumeration(tokenId);
         } else if (from != to) {
@@ -436,19 +437,9 @@ contract ImpactProductNFT is
         } else if (to != from) {
             _addTokenToOwnerEnumeration(to, tokenId);
         }
+        
+        return super._update(to, tokenId, auth);
     }
-
-    /**
-     * @dev Required override for _burn from both ERC721URIStorage and ERC721Enumerable
-     */
-    // function  _burn(
-    //     uint256 tokenId
-    // ) internal override {
-    //     super._burn(tokenId);
-
-    //     // Clear royalty information
-    //     _resetTokenRoyalty(tokenId);
-    // }
 
     /**
      * @dev Required override for tokenURI from ERC721URIStorage
@@ -544,5 +535,14 @@ contract ImpactProductNFT is
     function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal virtual {
         require(_exists(tokenId), "ERC721URIStorage: URI set of nonexistent token");
         _tokenURIs[tokenId] = _tokenURI;
+    }
+
+    /**
+     * @notice Burns a token and resets its royalty information
+     * @param tokenId ID of the token to burn
+     */
+    function burnWithRoyaltyReset(uint256 tokenId) external onlyRole(ADMIN_ROLE) {
+        _burn(tokenId);
+        _resetTokenRoyalty(tokenId);
     }
 }

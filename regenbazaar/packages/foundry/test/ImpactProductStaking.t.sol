@@ -161,7 +161,7 @@ contract ImpactProductStakingTest is Test {
     }
     
     // Multipliers and Timing
-    function testMultiplierCalculation() public {
+    function testMultiplierCalculation() public view {
         // Test different lock periods
         uint256 shortPeriod = 14 days;
         uint256 tier1Period = 40 days; // > 30 days

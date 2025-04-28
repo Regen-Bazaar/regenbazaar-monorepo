@@ -229,7 +229,7 @@ contract ImpactProductStaking is
      */
     function calculateMultiplier(uint256 lockPeriod) 
         public 
-        view 
+        pure 
         returns (uint256 multiplier) 
     {
         if (lockPeriod >= TIER4_THRESHOLD) {

@@ -47,7 +47,7 @@ contract ImpactProductFactoryTest is Test {
     }
 
     // Basic Functionality Tests
-    function testDeployment() public {
+    function testDeployment() public view {
         assertTrue(factory.hasRole(factory.DEFAULT_ADMIN_ROLE(), admin));
         assertTrue(factory.hasRole(factory.CREATOR_ROLE(), creator));
         assertTrue(factory.hasRole(factory.VERIFIER_ROLE(), verifier));
@@ -98,7 +98,7 @@ contract ImpactProductFactoryTest is Test {
         assertGt(impactData.impactValue, baseImpactValue);
     }
 
-    function testImpactCalculation() public {
+    function testImpactCalculation() public  view {
         // Test calculation for a specific category
         string memory category = "Tree preservation";
         uint256 baseValue = 1000;
@@ -268,7 +268,7 @@ contract ImpactProductFactoryTest is Test {
     }
 
     // Fuzz Testing
-    function testFuzzImpactCalculation(uint256 baseValue) public {
+    function testFuzzImpactCalculation(uint256 baseValue) public view {
         vm.assume(baseValue > 0 && baseValue < 1_000_000_000);
         
         string memory category = "Tree preservation"; // Has multiplier of 2500 bps

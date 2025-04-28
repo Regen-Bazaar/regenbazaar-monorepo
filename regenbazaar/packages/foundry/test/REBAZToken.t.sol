@@ -35,7 +35,7 @@ contract REBAZTokenTest is Test {
     }
 
     // Basic Functionality Tests
-    function testDeployment() public {
+    function testDeployment() public view {
         assertTrue(token.hasRole(token.DEFAULT_ADMIN_ROLE(), admin));
         assertTrue(token.hasRole(token.MINTER_ROLE(), minter));
         assertTrue(token.hasRole(token.PAUSER_ROLE(), pauser));
