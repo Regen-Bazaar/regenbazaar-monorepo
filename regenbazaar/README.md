@@ -26,10 +26,10 @@
 ```bash
 git clone https://github.com/Regen-Bazaar/regenbazaar-monorepo.git
 cd regenbazaar-monorepo
-npm install or npm i
+npm install
 ```
 
-### 2. Start a local envirobment like Ganache using anvil
+### 2. Start a local environment like Ganache using anvil
 
 ```bash
 # Launch Anvil via Foundry
@@ -40,8 +40,14 @@ anvil
 
 ```bash
 cd regenbazaar/packages/foundry
-forge install OpenZeppelin/openzeppelin-contracts --no-commit   # only first time
-forge build --via-ir # We're using --via-ir to solve "Stack too deep" errors .This flag enables Solidity's Intermediate Representation optimization
+
+# Install dependencies (only first time)
+forge install
+forge install foundry-rs/forge-std --no-commit
+forge install OpenZeppelin/openzeppelin-contracts --no-commit
+
+# Build contracts
+forge build --via-ir # We're using --via-ir to solve "Stack too deep" errors. This flag enables Solidity's Intermediate Representation optimization
 ```
 
 ## Contract Structure
@@ -63,23 +69,43 @@ Inside `packages/foundry/contracts` you'll find:
 
 ---
 
-
 ## Troubleshooting
 
-- **Imports not found**  
-  Ensure remappings in `packages/foundry/remappings.txt` or `foundry.toml`:  
+### Authentication Issues
+If you encounter authentication errors with GitHub:
+```bash
+# Configure Git to use SSH instead of HTTPS for GitHub (if you have SSH set up)
+git config --global url."git@github.com:".insteadOf "https://github.com/"
+```
+
+### Missing Dependencies
+- If you see errors about missing files, ensure all dependencies are properly installed:
+```bash
+# Reinstall forge standard libraries
+rm -rf lib/forge-std
+forge install foundry-rs/forge-std --no-commit
+
+# Reinstall OpenZeppelin
+rm -rf lib/openzeppelin-contracts
+forge install OpenZeppelin/openzeppelin-contracts --no-commit
+
+# Install solidity-bytes-utils if missing
+forge install Vectorized/solidity-bytes-utils --no-commit
+```
+
+### Import Errors
+- Ensure remappings in `packages/foundry/remappings.txt` or `foundry.toml` include:  
   ```
   @openzeppelin/=lib/openzeppelin-contracts/
-  ```
-- **Linearization errors**  
-  When using multiple ERC721 extensions, put the more-specific contract first in the `is` list:
-  ```solidity
-  contract MyNFT is ERC721URIStorage, ERC721Enumerable { … }
+  solidity-bytes-utils/=lib/solidity-bytes-utils/
+  forge-std/=lib/forge-std/src/
   ```
 
-
-
-
+### Linearization errors
+When using multiple ERC721 extensions, put the more-specific contract first in the `is` list:
+```solidity
+contract MyNFT is ERC721URIStorage, ERC721Enumerable { … }
+```
 
 ---
 
