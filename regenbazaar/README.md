@@ -26,8 +26,7 @@
 ```bash
 git clone https://github.com/Regen-Bazaar/regenbazaar-monorepo.git
 cd regenbazaar-monorepo
-cd regenbazaar
-npm install
+npm install or npm i
 ```
 
 ### 2. Start a local envirobment like Ganache using anvil
@@ -40,8 +39,8 @@ anvil
 ### 3. Compile smart contracts
 
 ```bash
-cd packages/foundry
-forge install OpenZeppelin/openzeppelin-contracts   # only first time
+cd regenbazaar/packages/foundry
+forge install OpenZeppelin/openzeppelin-contracts --no-commit   # only first time
 forge build --via-ir # We're using --via-ir to solve "Stack too deep" errors .This flag enables Solidity's Intermediate Representation optimization
 ```
 
