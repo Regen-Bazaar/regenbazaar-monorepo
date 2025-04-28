@@ -6,6 +6,18 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "../interfaces/IImpactProductNFT.sol";
 
+// Define struct at file level so it can be imported by tests
+struct ImpactProductData {
+    string category;
+    string location;
+    uint256 startDate;
+    uint256 endDate;
+    string beneficiaries;
+    uint256 baseImpactValue;
+    uint256 listingPrice;
+    string metadataURI;
+}
+
 /**
  * @title ImpactProductFactory
  * @author Regen Bazaar
@@ -86,25 +98,11 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
     
     /**
      * @notice Create a new impact product from real-world impact data
-     * @param category Impact category
-     * @param location Geographic location of the impact
-     * @param startDate When the impact activity started
-     * @param endDate When the impact activity ended
-     * @param beneficiaries Who benefited from this impact
-     * @param baseImpactValue Raw impact value before multipliers
-     * @param listingPrice Initial listing price
-     * @param metadataURI URI for additional metadata
+     * @param data Struct containing all impact product data
      * @return tokenId ID of the newly created impact product
      */
     function createImpactProduct(
-        string calldata category,
-        string calldata location,
-        uint256 startDate,
-        uint256 endDate,
-        string calldata beneficiaries,
-        uint256 baseImpactValue,
-        uint256 listingPrice,
-        string calldata metadataURI
+        ImpactProductData memory data
     )
         external
         onlyRole(CREATOR_ROLE)
@@ -112,28 +110,28 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
         nonReentrant
         returns (uint256 tokenId)
     {
-        require(baseImpactValue > 0, "Impact value must be positive");
-        require(listingPrice > 0, "Price must be positive");
-        require(bytes(category).length > 0, "Category cannot be empty");
-        require(_isCategorySupported(category), "Unsupported impact category");
+        require(data.baseImpactValue > 0, "Impact value must be positive");
+        require(data.listingPrice > 0, "Price must be positive");
+        require(bytes(data.category).length > 0, "Category cannot be empty");
+        require(_isCategorySupported(data.category), "Unsupported impact category");
 
-        uint256 finalImpactValue = _calculateImpactValue(category, baseImpactValue);
+        uint256 finalImpactValue = _calculateImpactValue(data.category, data.baseImpactValue);
 
         IImpactProductNFT.ImpactData memory impactData = IImpactProductNFT.ImpactData({
-            category: category,
+            category: data.category,
             impactValue: finalImpactValue,
-            location: location,
-            startDate: startDate,
-            endDate: endDate,
-            beneficiaries: beneficiaries,
+            location: data.location,
+            startDate: data.startDate,
+            endDate: data.endDate,
+            beneficiaries: data.beneficiaries,
             verified: false,
-            metadataURI: metadataURI
+            metadataURI: data.metadataURI
         });
 
         tokenId = impactProductNFT.createImpactProduct(
             msg.sender,
             impactData,
-            listingPrice,
+            data.listingPrice,
             msg.sender,
             defaultCreatorRoyaltyBps
         );
@@ -141,9 +139,9 @@ contract ImpactProductFactory is AccessControl, Pausable, ReentrancyGuard {
         emit ImpactProductCreated(
             tokenId,
             msg.sender,
-            category,
+            data.category,
             finalImpactValue,
-            listingPrice, 
+            data.listingPrice, 
             false 
         );
         

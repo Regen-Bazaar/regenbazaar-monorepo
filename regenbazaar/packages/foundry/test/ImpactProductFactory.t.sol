@@ -72,14 +72,16 @@ contract ImpactProductFactoryTest is Test {
         vm.expectEmit(true, true, false, true);
         emit ImpactProductCreated(0, creator, category, 0, listingPrice, false);
         uint256 tokenId = factory.createImpactProduct(
-            category,
-            location,
-            startDate,
-            endDate,
-            beneficiaries,
-            baseImpactValue,
-            listingPrice,
-            metadataURI
+            ImpactProductData({
+                category: category,
+                location: location,
+                startDate: startDate,
+                endDate: endDate,
+                beneficiaries: beneficiaries,
+                baseImpactValue: baseImpactValue,
+                listingPrice: listingPrice,
+                metadataURI: metadataURI
+            })
         );
         
         assertEq(tokenId, 0);
@@ -164,14 +166,16 @@ contract ImpactProductFactoryTest is Test {
         vm.prank(user1);
         vm.expectRevert();
         factory.createImpactProduct(
-            category,
-            location,
-            startDate,
-            endDate,
-            beneficiaries,
-            baseImpactValue,
-            listingPrice,
-            metadataURI
+            ImpactProductData({
+                category: category,
+                location: location,
+                startDate: startDate,
+                endDate: endDate,
+                beneficiaries: beneficiaries,
+                baseImpactValue: baseImpactValue,
+                listingPrice: listingPrice,
+                metadataURI: metadataURI
+            })
         );
         
         // Admin grants creator role to user1
@@ -181,14 +185,16 @@ contract ImpactProductFactoryTest is Test {
         // Now user1 should be able to create
         vm.prank(user1);
         uint256 tokenId = factory.createImpactProduct(
-            category,
-            location,
-            startDate,
-            endDate,
-            beneficiaries,
-            baseImpactValue,
-            listingPrice,
-            metadataURI
+            ImpactProductData({
+                category: category,
+                location: location,
+                startDate: startDate,
+                endDate: endDate,
+                beneficiaries: beneficiaries,
+                baseImpactValue: baseImpactValue,
+                listingPrice: listingPrice,
+                metadataURI: metadataURI
+            })
         );
         
         assertEq(nft.ownerOf(tokenId), user1);
@@ -238,14 +244,16 @@ contract ImpactProductFactoryTest is Test {
         vm.prank(creator);
         vm.expectRevert();
         factory.createImpactProduct(
-            nonExistentCategory,
-            location,
-            startDate,
-            endDate,
-            beneficiaries,
-            baseImpactValue,
-            listingPrice,
-            metadataURI
+            ImpactProductData({
+                category: nonExistentCategory,
+                location: location,
+                startDate: startDate,
+                endDate: endDate,
+                beneficiaries: beneficiaries,
+                baseImpactValue: baseImpactValue,
+                listingPrice: listingPrice,
+                metadataURI: metadataURI
+            })
         );
     }
 
