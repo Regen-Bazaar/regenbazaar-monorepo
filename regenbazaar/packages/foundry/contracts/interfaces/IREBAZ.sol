@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/access/IAccessControl.sol";
  * @custom:security-contact security@regenbazaar.com
  */
 interface IREBAZ is IERC20, IAccessControl {
-    /// @notice Event emitted when staking settings are updated
+    /// @notice Event emitted when staking configurations are updated
     event StakingSettingsUpdated(uint256 minStakeDuration, uint256 maxStakeDuration, uint256 baseRewardRate);
 
     /// @notice Event emitted when tokens are staked

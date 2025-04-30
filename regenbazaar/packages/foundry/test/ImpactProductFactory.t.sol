@@ -69,7 +69,7 @@ contract ImpactProductFactoryTest is Test {
         string memory metadataURI = "ipfs://QmHash";
         
         vm.prank(creator);
-        vm.expectEmit(true, true, false, true);
+        vm.expectEmit(true, true, true, true);
         emit ImpactProductCreated(0, creator, category, 0, listingPrice, false);
         uint256 tokenId = factory.createImpactProduct(
             ImpactProductData({
