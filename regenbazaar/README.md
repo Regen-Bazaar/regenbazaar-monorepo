@@ -53,6 +53,45 @@ forge install OpenZeppelin/openzeppelin-contracts --no-commit
 # Build contracts
 forge compile
 ```
+### 4 Local Deployment with Anvil & Foundry
+#### 4.1 Start Anvil ( Local Ethereum Blokchain node)
+```bash
+# Open a new terminal and run:
+anvil --block-time 5
+# This will start the local blockchain with a block time of 5 seconds
+```
+#### 4.2 Set up environment
+```bash
+# Open a new terminal and run:
+cd regenbazaar/packages/foundry
+```
+#### 4.3 Set Private Key For Deployment
+```bash
+# Export the first Anvil account’s private key (this is always the same for local Anvil):
+export PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+```
+#### 4.4 Deploy Contracts
+```bash
+# Run each command one by one, waiting for each to finish:
+
+# 1. Deploy REBAZToken
+forge script script/deploy/1_DeployREBAZToken.s.sol:DeployREBAZToken --rpc-url http://localhost:8545 --private-key $PRIVATE_KEY --broadcast
+
+# 2. Deploy ImpactProductNFT
+forge script script/deploy/2_DeployImpactProductNFT.s.sol:DeployImpactProductNFT --rpc-url http://localhost:8545 --private-key $PRIVATE_KEY --broadcast
+
+# 3. Deploy ImpactProductStaking
+forge script script/deploy/3_DeployImpactProductStaking.s.sol:DeployImpactProductStaking --rpc-url http://localhost:8545 --private-key $PRIVATE_KEY --broadcast
+
+# 4. Deploy RegenMarketplace
+forge script script/deploy/4_DeployMarketplace.s.sol:DeployMarketplace --rpc-url http://localhost:8545 --private-key $PRIVATE_KEY --broadcast
+
+# 5. Deploy ImpactProductFactory
+forge script script/deploy/5_DeployImpactProductFactory.s.sol:DeployImpactProductFactory --rpc-url http://localhost:8545 --private-key $PRIVATE_KEY --broadcast
+```
+#### 4.5 Check Deployment Output 
+Each deployment will print the contract address and status to your terminal.
+You can also check `deployments/addresses.json` for all deployed addresses.
 
 ## Contract Structure
 
