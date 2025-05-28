@@ -108,7 +108,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     /**
      * @notice Initializes the contract with payment token address
      *
-     * 
+     *
      */
     constructor(address _paymentToken) Ownable(msg.sender) {
         paymentToken = IERC20(_paymentToken);
@@ -126,19 +126,18 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
      * @param quantity Available quantity (1 for ERC721)
      * @param tokenType 0 for ERC721, 1 for ERC1155
      */
-    function createListing(
-        address token,
-        uint256 tokenId,
-        uint256 price,
-        uint256 quantity,
-        uint8 tokenType
-    ) external whenNotPaused {
+    function createListing(address token, uint256 tokenId, uint256 price, uint256 quantity, uint8 tokenType)
+        external
+        whenNotPaused
+    {
         if (tokenType > TOKEN_TYPE_ERC1155) revert InvalidTokenType();
 
         if (tokenType == TOKEN_TYPE_ERC721) {
             if (IERC721(token).ownerOf(tokenId) != msg.sender) revert Unauthorized();
-            if (IERC721(token).getApproved(tokenId) != address(this) && 
-            !IERC721(token).isApprovedForAll(msg.sender, address(this))) revert Unauthorized();
+            if (
+                IERC721(token).getApproved(tokenId) != address(this)
+                    && !IERC721(token).isApprovedForAll(msg.sender, address(this))
+            ) revert Unauthorized();
             if (quantity <= 0) revert ERC721InvalidQuantity();
         } else {
             if (IERC1155(token).balanceOf(msg.sender, tokenId) < quantity) revert InsufficientBalance();
@@ -182,14 +181,15 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
         }
 
         // Handle payment
-        if (address(paymentToken) == address(0)) { 
+        if (address(paymentToken) == address(0)) {
             if (msg.value != totalPrice) revert IncorrectPaymentAmount();
-            
-            (bool successSeller, ) = payable(listing.seller).call{value: sellerShare}("");
-            (bool successPlatform, ) = payable(owner()).call{value: platformFee}("");
-            
+
+            (bool successSeller,) = payable(listing.seller).call{value: sellerShare}("");
+            (bool successPlatform,) = payable(owner()).call{value: platformFee}("");
+
             if (!successSeller || !successPlatform) revert TransferFailed();
-        } else { // ERC20 payment
+        } else {
+            // ERC20 payment
             paymentToken.safeTransferFrom(msg.sender, address(this), totalPrice);
             paymentToken.safeTransfer(listing.seller, sellerShare);
             paymentToken.safeTransfer(owner(), platformFee);
@@ -199,13 +199,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
         if (listing.tokenType == TOKEN_TYPE_ERC721) {
             IERC721(listing.token).safeTransferFrom(listing.seller, msg.sender, listing.tokenId);
         } else {
-            IERC1155(listing.token).safeTransferFrom(
-                listing.seller, 
-                msg.sender, 
-                listing.tokenId, 
-                quantity, 
-                bytes("")
-            );
+            IERC1155(listing.token).safeTransferFrom(listing.seller, msg.sender, listing.tokenId, quantity, bytes(""));
         }
 
         emit ListingPurchased(listingId, msg.sender, quantity, totalPrice, sellerShare, platformFee);
@@ -219,10 +213,12 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
      * @param listingIds Array of listing IDs to purchase
      * @param quantities Array of quantities to purchase for each listing
      */
-    function buyListingsBatch(
-        uint256[] calldata listingIds,
-        uint256[] calldata quantities
-    ) external payable nonReentrant whenNotPaused {
+    function buyListingsBatch(uint256[] calldata listingIds, uint256[] calldata quantities)
+        external
+        payable
+        nonReentrant
+        whenNotPaused
+    {
         if (listingIds.length != quantities.length) revert MismatchedInputLengths();
 
         uint256 totalPrice;
@@ -233,7 +229,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
             Listing storage listing = listings[listingIds[i]];
             if (!listing.isActive) revert InvalidListing();
             if (listing.quantity < quantities[i]) revert InsufficientBalance();
-            
+
             uint256 listingPrice = listing.price * quantities[i];
             totalPrice += listingPrice;
             totalPlatformFee += calculatePlatformFee(listingPrice);
@@ -242,9 +238,10 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
         // Handle payment
         if (address(paymentToken) == address(0)) {
             if (msg.value != totalPrice) revert IncorrectPaymentAmount();
-            (bool success, ) = payable(owner()).call{value: totalPlatformFee}("");
+            (bool success,) = payable(owner()).call{value: totalPlatformFee}("");
             if (!success) revert TransferFailed();
-        } else { // ERC20 payment
+        } else {
+            // ERC20 payment
             paymentToken.safeTransferFrom(msg.sender, address(this), totalPrice);
             paymentToken.safeTransfer(owner(), totalPlatformFee);
         }
@@ -264,7 +261,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
 
             // Transfer funds
             if (address(paymentToken) == address(0)) {
-                (bool success, ) = payable(listing.seller).call{value: sellerShare}("");
+                (bool success,) = payable(listing.seller).call{value: sellerShare}("");
                 if (!success) revert TransferFailed();
             } else {
                 paymentToken.safeTransfer(listing.seller, sellerShare);
@@ -275,21 +272,12 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
                 IERC721(listing.token).safeTransferFrom(listing.seller, msg.sender, listing.tokenId);
             } else {
                 IERC1155(listing.token).safeTransferFrom(
-                    listing.seller, 
-                    msg.sender, 
-                    listing.tokenId, 
-                    quantities[i], 
-                    bytes("")
+                    listing.seller, msg.sender, listing.tokenId, quantities[i], bytes("")
                 );
             }
 
             emit ListingPurchased(
-                listingIds[i],
-                msg.sender,
-                quantities[i],
-                listingPrice,
-                sellerShare,
-                calculatePlatformFee(listingPrice)
+                listingIds[i], msg.sender, quantities[i], listingPrice, sellerShare, calculatePlatformFee(listingPrice)
             );
         }
     }
@@ -316,14 +304,14 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     function getActiveListings() external view returns (Listing[] memory) {
         Listing[] memory activeListings = new Listing[](nextListingId);
         uint256 count = 0;
-        
+
         for (uint256 i = 0; i < nextListingId; i++) {
             if (listings[i].isActive) {
                 activeListings[count] = listings[i];
                 count++;
             }
         }
-        
+
         // Resize array to remove empty elements
         assembly {
             mstore(activeListings, count)
@@ -340,14 +328,14 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     function getListingsBySeller(address seller) external view returns (Listing[] memory) {
         Listing[] memory sellerListings = new Listing[](nextListingId);
         uint256 count = 0;
-        
+
         for (uint256 i = 0; i < nextListingId; i++) {
             if (listings[i].seller == seller) {
                 sellerListings[count] = listings[i];
                 count++;
             }
         }
-        
+
         // Resize array to remove empty elements
         assembly {
             mstore(sellerListings, count)
@@ -362,7 +350,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
      */
     function getAllListings() external view returns (Listing[] memory) {
         Listing[] memory allListings = new Listing[](nextListingId);
-        
+
         for (uint256 i = 0; i < nextListingId; i++) {
             allListings[i] = listings[i];
         }
@@ -398,7 +386,7 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
      */
     function recoverFunds(address token, uint256 amount) external onlyOwner {
         if (token == address(0)) {
-            (bool success, ) = payable(owner()).call{value: amount}("");
+            (bool success,) = payable(owner()).call{value: amount}("");
             if (!success) revert TransferFailed();
         } else {
             IERC20(token).safeTransfer(owner(), amount);
@@ -428,22 +416,19 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     // ======================
     // ERC Receiver Functions
     // ======================
-    function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external override returns (bytes4) {
+    function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data)
+        external
+        override
+        returns (bytes4)
+    {
         return this.onERC721Received.selector;
     }
 
-    function onERC1155Received(
-        address operator,
-        address from,
-        uint256 id,
-        uint256 value,
-        bytes calldata data
-    ) external override returns (bytes4) {
+    function onERC1155Received(address operator, address from, uint256 id, uint256 value, bytes calldata data)
+        external
+        override
+        returns (bytes4)
+    {
         return this.onERC1155Received.selector;
     }
 
@@ -458,12 +443,10 @@ contract RegenBazaar is Ownable, Pausable, ReentrancyGuard, IERC721Receiver, IER
     }
 
     function supportsInterface(bytes4 interfaceId) external pure override returns (bool) {
-        return interfaceId == type(IERC721Receiver).interfaceId ||
-               interfaceId == type(IERC1155Receiver).interfaceId;
+        return interfaceId == type(IERC721Receiver).interfaceId || interfaceId == type(IERC1155Receiver).interfaceId;
     }
 
-
-        /**
+    /**
      * @notice Rejects direct ETH transfers to contract
      * @dev All payments must go through buyListing/buyListingsBatch
      */

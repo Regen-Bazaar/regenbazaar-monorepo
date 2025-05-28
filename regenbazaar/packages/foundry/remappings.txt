@@ -1,1 +1,8 @@
 @openzeppelin/contracts/=lib/openzeppelin-contracts/contracts
+@openzeppelin/contracts/utils/=lib/openzeppelin-contracts/contracts/utils
+@openzeppelin/contracts/token/ERC20/=lib/openzeppelin-contracts/contracts/token/ERC20
+@openzeppelin/contracts/token/ERC721/=lib/openzeppelin-contracts/contracts/token/ERC721
+@openzeppelin/contracts/token/ERC1155/=lib/openzeppelin-contracts/contracts/token/ERC1155
+@openzeppelin/contracts/access/=lib/openzeppelin-contracts/contracts/access
+@openzeppelin/contracts/utils/=lib/openzeppelin-contracts/contracts/utils
+@openzeppelin/contracts/security/=lib/openzeppelin-contracts/contracts/security
