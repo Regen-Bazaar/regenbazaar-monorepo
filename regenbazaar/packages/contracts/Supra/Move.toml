@@ -1,0 +1,17 @@
+[package]
+name = "impact_factory"
+version = "1.0.0"
+authors = []
+
+[addresses]
+impact_factory = "0x0"
+rebaz_token = "0xcbcab0b6f33d30308df448b48d128d1b617d7c99e1b643db803ac79727d98c99"
+
+[dev-addresses]
+
+[dependencies.SupraFramework]
+git = "https://github.com/Entropy-Foundation/aptos-core.git"
+rev = "dev"
+subdir = "aptos-move/framework/supra-framework"
+
+[dev-dependencies]
